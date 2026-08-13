@@ -100,8 +100,12 @@ class NLPDetector(BaseDetector):
         self.person_blacklisted_words = {
             "director", "directors", "secretary", "officer", "officers", "auditor", "auditors",
             "underwriter", "underwriters", "banker", "bankers", "promoter", "promoters", "committee",
-            "act", "companies", "board", "counsel", "advisor", "advisors", "designation", "contact"
+            "act", "companies", "board", "counsel", "advisor", "advisors", "designation", "contact",
+            "strict", "redaction", "pii", "accuracy", "test", "date", "birth", "email", "phone",
+            "address", "value", "company", "ssn", "ip", "card", "credit", "the", "managing", "independent",
+            "and", "of", "for", "or", "with", "is", "at", "this", "that"
         }
+        self.name_regex = re.compile(r'\b[A-Z][a-z]+\s+(?:[A-Z]\.?\s+)?[A-Z][a-z]+\b')
 
         # Exact case-insensitive blacklist for PERSON
         self.person_exact_blacklist = {
@@ -432,6 +436,41 @@ class NLPDetector(BaseDetector):
                         )
                     )
 
+        # Run custom name regex candidate finder to catch missed names
+        for m in self.name_regex.finditer(text):
+            candidate = m.group()
+            start, end = m.start(), m.end()
+            
+            # Check overlap with GPE/LOC/ORG/FAC entities from spaCy
+            is_non_person_ent = False
+            for ent in doc.ents:
+                if ent.label_ in ("GPE", "LOC", "ORG", "FAC"):
+                    if max(start, ent.start_char) < min(end, ent.end_char):
+                        is_non_person_ent = True
+                        break
+            if is_non_person_ent:
+                continue
+                
+            # Exclude if overlaps with ANY existing matches (including PERSON to avoid duplicates)
+            overlaps_existing = False
+            for existing in matches:
+                if max(start, existing.start) < min(end, existing.end):
+                    overlaps_existing = True
+                    break
+            if overlaps_existing:
+                continue
+
+            matches.append(
+                PIIMatch(
+                    pii_type="PERSON",
+                    text=candidate,
+                    start=start,
+                    end=end,
+                    confidence=0.85,
+                    detector="regex_person_fallback"
+                )
+            )
+
         # 5. Overlap resolution between COMPANY and ADDRESS
         # If an ADDRESS candidate overlaps with a COMPANY candidate, prefer COMPANY
         company_matches = [m for m in matches if m.pii_type == "COMPANY"]
@@ -445,6 +484,18 @@ class NLPDetector(BaseDetector):
                         break
                 if overlaps_company:
                     continue
+            
+            # Apply post-filtering for PERSON type
+            if m.pii_type == "PERSON":
+                if any(c.isdigit() for c in m.text):
+                    continue
+                text_for_words = m.text.replace('_', ' ')
+                words = [w.lower() for w in re.findall(r'\b\w+\b', text_for_words)]
+                if any(w in self.person_blacklisted_words for w in words):
+                    continue
+                if any(w in self.location_words for w in words):
+                    continue
+                    
             filtered_matches.append(m)
 
         return filtered_matches

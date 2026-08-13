@@ -168,7 +168,9 @@ class RedactionMapper:
                 continue
             try:
                 matches = detector.detect(replacement)
-                if matches:
+                # Only check if it matched the validator's own type
+                type_matches = [m for m in matches if m.pii_type == detector_type]
+                if type_matches:
                     return False
             except Exception:
                 continue
@@ -581,9 +583,22 @@ class RedactionEngine:
                     continue
                 processed_elements.add(element_id)
 
+            # Determine if this block is a document title or heading style
+            is_heading_or_title = False
+            if block.block_type in ("paragraph", "header_paragraph", "footer_paragraph") and block.element is not None:
+                try:
+                    style_name = block.element.style.name
+                    if style_name in ("Title", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6", "Heading 7", "Heading 8", "Heading 9"):
+                        is_heading_or_title = True
+                except Exception:
+                    pass
+
             block_matches: List[PIIMatch] = []
             # Single-pass detection on the original block text
             for detector in self.detectors:
+                # Skip running NLPDetector on headings/titles to prevent false positive PERSON matches
+                if isinstance(detector, NLPDetector) and is_heading_or_title:
+                    continue
                 try:
                     matches = detector.detect(block.text)
                     block_matches.extend(matches)

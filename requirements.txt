@@ -2,3 +2,7 @@ python-docx>=1.1.0
 pytest>=8.0.0
 spacy>=3.7.0
 presidio-analyzer>=2.2.0
+fastapi>=0.100.0
+uvicorn>=0.20.0
+python-multipart>=0.0.6
+httpx>=0.24.0

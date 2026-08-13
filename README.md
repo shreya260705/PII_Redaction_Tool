@@ -1,62 +1,147 @@
-# PII Redaction Tool - Detection Foundation
+# PII Redaction Tool
 
-This repository contains the foundation for a high-precision PII Redaction Tool built for a corporate DOCX financial prospectus document.
-
----
-
-## Project Architecture
-
-The pipeline consists of the following modular layers:
-
-1.  **Document Extraction Layer (`src/document_reader.py`)**:
-    *   Reads paragraphs, tables (including rows and cells), headers, and footers from a DOCX file without modifying the source.
-    *   Iterates XML children in physical order to preserve document layout order.
-    *   Stores results in typed dataclasses (`DocumentBlock` and `BlockLocation`) preserving stable, absolute structural indices.
-2.  **Structured PII Detectors (`src/detectors/structured.py` & `src/detectors/validators.py`)**:
-    *   **EMAIL**: Standard regular expression.
-    *   **PHONE**: Indian mobile and landline patterns requiring structural prefixes (`+91`/`0`) or nearby sentence-bounded keywords.
-    *   **IP_ADDRESS**: IPv4 octet bounds ($0 \le octet \le 255$) excluding dotted section titles.
-    *   **SSN**: Hyphenated format; unhyphenated format matches ONLY if a strong context keyword is in the same sentence.
-    *   **CREDIT_CARD**: 13-19 digit candidates validated by the Luhn algorithm.
-    *   **DATE_OF_BIRTH**: Matches date layouts ONLY if a birth keyword (`dob`, `born`, `birth`) is found within a 50-character distance in the same sentence.
-3.  **NLP PII Detectors (`src/detectors/nlp.py`)**:
-    *   Utilizes a single-loaded **spaCy** (`en_core_web_sm`) model and **Microsoft Presidio Analyzer** engine.
-    *   **PERSON**: Extracts PERSON entities, boosted by designation keywords (e.g. `Chairman`, `Managing Director`, `Company Secretary`) within the same sentence.
-    *   **COMPANY**: Filters spaCy `ORG` entities using a custom policy.
-    *   **ADDRESS**: Merges spaCy location entities, structural keywords, and 6-digit Indian PIN codes, filtering out standalone references.
-4.  **Deterministic Overlap Resolver (`src/detectors/base.py`)**:
-    *   Resolves overlapping entities using a greedy interval scheduler. Prioritizes matches by: (1) higher confidence, (2) explicit semantic type priority (`CREDIT_CARD` > `SSN` > `EMAIL` > `COMPANY` > `PERSON` > `ADDRESS` > `PHONE` > `IP_ADDRESS` > `DATE_OF_BIRTH`), (3) longer span length, and (4) earlier start offset.
+A production-quality web application to automatically detect and redact Personally Identifiable Information (PII) from Microsoft Word (`.docx`) documents, replacing detected values with deterministic, mathematically valid synthetic replacements.
 
 ---
 
-## Explicit Classification Policies
-
-### 1. COMPANY Boundary Policy
-In the context of a public corporate prospectus:
-*   **Redacted as COMPANY**: Commercial entities, sponsor/commercial banks, lead managers, underwriters, law firms, and auditing partnerships. These represent proprietary third-party partners.
-*   **Not Redacted (Excluded)**: Public exchanges (BSE, NSE), government ministries, departments, and statutory regulators (SEBI, Registrar of Companies). These are public entities whose presence is legally mandated and non-proprietary.
-
-### 2. ADDRESS Strategy
-*   An address is matched ONLY if it contains multiple supporting structural elements (e.g. `Flat No.`, `Plot No.`, `Building`, `Road`) and/or GPE entities, and optionally a 6-digit PIN code.
-*   Standalone geographic words (e.g. `"India"`, `"Pune"`, `"Maharashtra"` alone) or standalone PIN codes are **never** classified as `ADDRESS`.
+## 1. Overview
+This tool allows users to upload a DOCX document, processes it through a high-precision Python PII redaction pipeline in the backend, displays a summary of the redactions, and enables downloading the redacted DOCX with preserved layouts and styling.
 
 ---
 
-## Installation & Setup
+## 2. Features
+- **In-Place Segmented Redaction**: Operates directly on the document's XML runs to preserve formatting (bold, italic, fonts, sizes).
+- **Split Redact & Download**: Statistics are generated and returned in a metadata payload first, followed by a separate secure download request.
+- **Robust Security Policies**: Replaces sensitive data with realistic, deterministic synthetic data (e.g. Luhn-compliant credit cards, phone numbers, and month-preserving dates).
+- **Temporary File Protection**: Safe directory sandboxing under the OS temporary folder. Temporary files and mapping entries are cleared immediately after download or automatically pruned after 30 minutes.
 
-1.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-2.  **Download the spaCy NLP Model**:
-    ```bash
-    python -m spacy download en_core_web_sm
-    ```
-3.  **Run the Inspection CLI**:
-    ```bash
-    python -m src.inspect_pii
-    ```
-4.  **Run unit tests**:
-    ```bash
-    python -m pytest
-    ```
+---
+
+## 3. Architecture
+
+```
+React (Vercel) → FastAPI (Render) → RedactionEngine → Redacted DOCX
+```
+
+1. **Frontend (React + Vite)**: Sends the DOCX file to the FastAPI backend using `multipart/form-data`.
+2. **Backend (FastAPI)**: Saves the file temporarily, instantiates the `RedactionEngine`, redacts the document, stores the output path against a secure UUID `file_id` mapping, and returns statistics.
+3. **Download**: The frontend requests the file via `/api/download/{file_id}`, which serves it as a `FileResponse` and registers a background task to safely delete the file from the server.
+
+---
+
+## 4. Supported PII Types
+- **EMAIL**: Detected via standard RFC-compliant regexes.
+- **PHONE**: Indian mobile and landline patterns requiring structural prefixes (`+91`/`0`) or sentence-bound keywords.
+- **IP_ADDRESS**: IPv4 octet bounds ($0 \le octet \le 255$).
+- **SSN**: Hyphenated and unhyphenated SSN formats.
+- **CREDIT_CARD**: 13-19 digit candidates validated by the Luhn algorithm.
+- **DATE_OF_BIRTH**: Verified using date structures proximity-linked to birth keywords.
+- **PERSON**: Boosted by designation/professional keywords in the same sentence.
+- **COMPANY**: Filters out public bodies and legally mandated regulators (e.g. SEBI, BSE, NSE) while matching commercial ORG entities.
+- **ADDRESS**: Complex address structures matching multiple elements and Indian PIN codes.
+
+---
+
+## 5. How the Redaction Engine Works
+1. **Extraction**: `DocumentReader` extracts paragraphs, tables, cells, headers, and footers in document layout order.
+2. **Detection**: Runs the regex and spaCy/Presidio detectors against block text.
+3. **Overlap Resolution**: A greedy interval scheduler resolves overlaps by sorting by confidence, type priority, and length.
+4. **Redaction Slicing**: Slices paragraph XML runs right-to-left using original offsets to safely insert replacements without shifting unmutated spans.
+
+---
+
+## 6. Local Setup
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+
+### Setup Python Backend
+1. Install requirements:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Download the spaCy model:
+   ```bash
+   python -m spacy download en_core_web_sm
+   ```
+
+### Setup React Frontend
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install Node modules:
+   ```bash
+   npm install
+   ```
+
+---
+
+## 7. Running Backend
+From the root directory, run:
+```bash
+uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+```
+API Documentation will be available at `http://127.0.0.1:8000/docs`.
+
+---
+
+## 8. Running Frontend
+From the `frontend` directory, run:
+```bash
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+---
+
+## 9. API Endpoints
+- **GET `/api/health`**: Liveness probe returning `{"status": "ok"}`.
+- **POST `/api/redact`**: Accepts `.docx` document, returns `file_id` and replacements statistics.
+- **GET `/api/download/{file_id}`**: Downloads the redacted document and triggers background file deletion.
+
+---
+
+## 10. Testing
+Run the complete test suite (includes 62 engine tests and 7 backend tests):
+```bash
+pytest -q
+```
+Currently, **69 automated tests** are passing.
+
+---
+
+## 11. Render & Vercel Deployment
+
+### Backend (Render)
+- **Service Type**: Web Service
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+- **Environment Variables**:
+  - `FRONTEND_URL` = `https://<your-vercel-domain>.vercel.app`
+
+### Frontend (Vercel)
+- **Root Directory**: `frontend`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_URL` = `https://<your-render-subdomain>.onrender.com`
+
+---
+
+## 12. Security Considerations
+- **No Path Traversal**: Files are mapped only via UUIDs, completely decoupling client input from the filesystem.
+- **Ephemeral Storage**: All files are stored under a sandboxed directory in the OS temp folder. Input files are cleared immediately after redaction; output files are cleared post-download or pruned after 30 minutes of inactivity.
+- **Leaked PII Prevention**: Metadata payloads do not contain original PII values or mapped tables, returning only counts and the random file identifier.
+
+---
+
+## 13. Example Usage
+```bash
+# Redact document via API (Returns JSON metadata)
+curl -X POST -F "file=@prospectus.docx" http://127.0.0.1:8000/api/redact
+
+# Download the redacted output
+curl -O -J http://127.0.0.1:8000/api/download/a4d33a9b-3c48-43e8-8a8b-11752b2f6bc4
+```

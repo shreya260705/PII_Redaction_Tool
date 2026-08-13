@@ -617,3 +617,81 @@ def test_windows_utf8_safety():
         except Exception:
             pass
     assert True
+
+# =====================================================================
+# Strict Accuracy Verification Test
+# =====================================================================
+def test_strict_accuracy_verification(tmp_path):
+    input_path = "PII_Strict_Accuracy_Test.docx"
+    output_path = tmp_path / "redacted_strict.docx"
+    
+    engine = RedactionEngine()
+    results = engine.redact(input_path, str(output_path))
+    
+    # 1. Expected counts verification
+    expected_counts = {
+        "PERSON": 7,
+        "EMAIL": 8,
+        "PHONE": 6,
+        "IP_ADDRESS": 6,
+        "SSN": 6,
+        "CREDIT_CARD": 6,
+        "DATE_OF_BIRTH": 6,
+        "COMPANY": 6,
+        "ADDRESS": 6
+    }
+    
+    counts = results["replacements_by_type"]
+    
+    print("\n--- DETECTIONS AND REPLACEMENTS ---")
+    for k, expected in expected_counts.items():
+        actual = counts.get(k, 0)
+        print(f"{k:<15} {actual}/{expected}")
+        assert actual == expected, f"Expected {expected} replacements for {k}, but got {actual}"
+        
+    print(f"\nTOTAL           {results['total_replacements']}/57")
+    assert results['total_replacements'] == 57, f"Expected 57 total replacements, got {results['total_replacements']}"
+    
+    # 2. Verify all original PII values are actually absent from the generated output
+    ORIGINAL_PII = [
+        # PERSON
+        "Rohan Sharma", "Priya Mehta", "Amit Verma", "Neha Kapoor", "Arjun Patel", "Kabir Singh",
+        # EMAIL
+        "rohan.sharma@example.com", "priya.mehta@example.com", "amit.verma@example.com",
+        "neha.kapoor@example.com", "arjun.patel@example.com", "kabir.singh@example.com",
+        # PHONE
+        "+91 9876543210", "+91 8765432109", "+91 7654321098", "+91 9123456780", "+91 9988776655", "+91 9345678901",
+        # IP_ADDRESS
+        "192.0.2.10", "192.0.2.20", "198.51.100.30", "198.51.100.40", "203.0.113.50", "203.0.113.60",
+        # SSN
+        "123-45-6789", "234-56-7890", "345-67-8901", "456-78-9012", "567-89-0123", "678-90-1234",
+        # CREDIT_CARD
+        "4111 1111 1111 1111", "4111-1111-1111-1111", "4012 8888 8888 1881", "4000-0566-5566-5556",
+        "4222 2222 2222 2222", "4242 4242 4242 4242",
+        # DATE_OF_BIRTH
+        "15/04/1995", "22-08-1988", "03.11.1992", "07/12/1999", "25-01-1985", "12/09/1990",
+        # COMPANY
+        "Acme Technologies Pvt Ltd", "Apex Solutions Limited", "Nova Systems LLP",
+        "Summit Holdings Ltd", "Vertex Enterprises Pvt Ltd", "Horizon Capital Pvt Ltd",
+        # ADDRESS
+        "Plot No. 45, MG Road, Pune, Maharashtra - 411001",
+        "Flat 302, Green Layout, Baner Road, Pune, Maharashtra - 411045",
+        "Building 4B, Tech Park, Outer Ring Road, Bangalore, Karnataka - 560103",
+        "5th Floor, Trade Center, Link Road, Mumbai, Maharashtra - 400053",
+        "Survey No. 112, Senapati Bapat Road, Pune, Maharashtra - 411016",
+        "Plot No. 88, MG Road, Delhi, Delhi - 110001"
+    ]
+    
+    redacted_extracted = DocumentReader.read(str(output_path))
+    remaining_pii_count = 0
+    
+    for block in redacted_extracted.blocks:
+        if not block.text or not block.text.strip():
+            continue
+        for original_val in ORIGINAL_PII:
+            if original_val in block.text:
+                print(f"FAILED: Original PII value '{original_val}' still remains in block: {repr(block.text)}")
+                remaining_pii_count += 1
+                
+    print(f"ORIGINAL PII REMAINING: {remaining_pii_count}")
+    assert remaining_pii_count == 0, f"Expected 0 original PII values remaining, but found {remaining_pii_count}"
