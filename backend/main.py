@@ -26,6 +26,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20 MB
@@ -86,7 +87,7 @@ def redact_document(
     background_tasks: BackgroundTasks = BackgroundTasks()
 ):
     # Prune expired files in the background on every request
-    background_tasks.add_task(prune_expired_files)
+    background_tasks.add_task(prune_expired_files, 120)
 
     # 1. Validate file extension
     filename = file.filename or ""
@@ -150,7 +151,8 @@ def redact_document(
 
     # Generate a secure cryptographically random file_id
     file_id = str(uuid.uuid4())
-    file_mappings[file_id] = (output_path, filename, time.time())
+    created_at = time.time()
+    file_mappings[file_id] = (output_path, filename, created_at)
 
     # Build clean sanitized output filename
     base, _ = os.path.splitext(filename)
@@ -159,10 +161,14 @@ def redact_document(
         sanitized_name = "Redacted"
     download_filename = f"{sanitized_name}_Redacted.docx"
 
+    from datetime import datetime, timezone
+    expires_at = datetime.fromtimestamp(created_at + 120.0, tz=timezone.utc).isoformat()
+
     return {
         "success": True,
         "file_id": file_id,
         "filename": download_filename,
+        "expires_at": expires_at,
         "total_replacements": result["total_replacements"],
         "replacements_by_type": result["replacements_by_type"],
         "unique_mappings_count": result["unique_mappings_count"]
@@ -187,7 +193,16 @@ async def download_file(
             detail="File ID not found or has expired."
         )
 
-    filepath, original_filename, _ = file_mappings[file_id]
+    filepath, original_filename, created_at = file_mappings[file_id]
+
+    # Verify if expired (older than 120 seconds)
+    if time.time() - created_at > 120.0:
+        # File has expired! Clean it up
+        clean_temp_file(filepath, file_id)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="File ID not found or has expired."
+        )
 
     if not os.path.exists(filepath):
         raise HTTPException(
@@ -200,8 +215,6 @@ async def download_file(
     if not sanitized_name:
         sanitized_name = "Redacted"
     download_filename = f"{sanitized_name}_Redacted.docx"
-
-    background_tasks.add_task(clean_temp_file, filepath, file_id)
 
     return FileResponse(
         path=filepath,

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || 
@@ -11,7 +11,50 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState("");
   const [redactResult, setRedactResult] = useState(null);
 
+  // Expiry states
+  const [timeLeft, setTimeLeft] = useState("");
+  const [expired, setExpired] = useState(false);
+
   const fileInputRef = useRef(null);
+  const timerRef = useRef(null);
+
+  // Effect to manage countdown timer based on server-provided expires_at
+  useEffect(() => {
+    if (status === "success" && redactResult && redactResult.expires_at) {
+      const targetTime = new Date(redactResult.expires_at).getTime();
+
+      const updateTimer = () => {
+        const now = new Date().getTime();
+        const diff = targetTime - now;
+
+        if (diff <= 0) {
+          setExpired(true);
+          setTimeLeft("00:00");
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+        } else {
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          const mm = String(minutes).padStart(2, "0");
+          const ss = String(seconds).padStart(2, "0");
+          setTimeLeft(`${mm}:${ss}`);
+          setExpired(false);
+        }
+      };
+
+      updateTimer();
+      timerRef.current = setInterval(updateTimer, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [status, redactResult]);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -66,8 +109,14 @@ export default function App() {
     setRedactResult(null);
     setStatus("idle");
     setErrorMsg("");
+    setExpired(false);
+    setTimeLeft("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
   };
 
@@ -84,7 +133,6 @@ export default function App() {
       const response = await fetch(`${API_BASE}/api/redact`, {
         method: "POST",
         body: formData,
-        // Browser sets Content-Type header with multipart boundary automatically
       });
 
       if (!response.ok) {
@@ -102,7 +150,7 @@ export default function App() {
   };
 
   const handleDownload = async () => {
-    if (!redactResult || !redactResult.file_id) return;
+    if (!redactResult || !redactResult.file_id || expired) return;
 
     try {
       const downloadUrl = `${API_BASE}/api/download/${redactResult.file_id}`;
@@ -115,7 +163,7 @@ export default function App() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = redactResult.filename || "Redacted.docx";
+      a.download = redactResult.filename || "Redacted_Document.docx";
       document.body.appendChild(a);
       a.click();
       
@@ -140,86 +188,114 @@ export default function App() {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>PII Redaction Engine</h1>
-        <p>
-          Upload a DOCX document and automatically remove personally identifiable information 
-          with deterministic synthetic replacements.
-        </p>
+        <div className="logo-container">
+          <svg className="shield-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span className="logo-text">PII Shield</span>
+        </div>
       </header>
 
-      <main className="glass-card">
-        {/* Error State */}
+      <section className="hero-section">
+        <h1>Secure Document Redaction</h1>
+        <p>Safely remove sensitive PII from your Word documents with deterministic synthetic replacements.</p>
+      </section>
+
+      <main className="content-card slide-up">
+        {/* Error Alert */}
         {status === "error" && errorMsg && (
-          <div className="error-alert">
+          <div className="error-alert fade-in">
             <svg className="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <div className="error-content">
-              <h4>Action Failed</h4>
+              <h4>Redaction Error</h4>
               <p>{errorMsg}</p>
             </div>
+            <button className="close-alert-btn" onClick={() => setErrorMsg("")}>&times;</button>
           </div>
         )}
 
         {/* Processing State */}
         {status === "processing" ? (
-          <div className="status-container">
+          <div className="status-container processing-state">
             <div className="spinner"></div>
-            <h3>Detecting and redacting PII...</h3>
-            <p>Scanning runs, cells, headers, and footers for sensitive information.</p>
+            <h3>Redacting Document</h3>
+            <p>Scanning text runs, tables, headers, and footers...</p>
           </div>
         ) : status === "success" && redactResult ? (
-          /* Success / Statistics View */
-          <div className="status-container" style={{ padding: "10px 0" }}>
+          /* Success View */
+          <div className="status-container success-state fade-in">
             <div className="success-header">
               <div className="success-icon-container">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h2>Redaction Complete</h2>
-              <p>Generated safe synthetic mappings successfully.</p>
+              <h3>Redaction Complete</h3>
+              <p className="success-subtitle">{redactResult.total_replacements} PII instances removed</p>
             </div>
 
-            <div style={{ width: "100%", margin: "20px 0" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px", fontSize: "0.95rem" }}>
-                <span style={{ color: "var(--text-secondary)" }}>File Name:</span>
-                <span style={{ fontWeight: 500 }}>{file ? file.name : "Document.docx"}</span>
+            <div className="result-details">
+              <div className="detail-row">
+                <span className="detail-label">Filename:</span>
+                <span className="detail-val" title={file ? file.name : "Document.docx"}>
+                  {file ? file.name : "Document.docx"}
+                </span>
               </div>
-              
+
               {/* Statistics Grid */}
               <div className="stats-grid">
                 <div className="stat-item total">
-                  <div className="stat-count">{redactResult.total_replacements}</div>
-                  <div className="stat-label">Total Replacements</div>
+                  <span className="stat-count">{redactResult.total_replacements}</span>
+                  <span className="stat-label">Total Redacted</span>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-count">{redactResult.unique_mappings_count}</div>
-                  <div className="stat-label">Unique Mappings</div>
+                <div className="stat-item unique">
+                  <span className="stat-count">{redactResult.unique_mappings_count}</span>
+                  <span className="stat-label">Unique Mappings</span>
                 </div>
-                
-                {/* Dynamically render replacements_by_type from backend */}
                 {Object.entries(redactResult.replacements_by_type || {}).map(([type, count]) => (
-                  <div className="stat-item" key={type}>
-                    <div className="stat-count">{count}</div>
-                    <div className="stat-label">{type}</div>
+                  <div className="stat-item type-badge" key={type} data-type={type}>
+                    <span className="stat-count">{count}</span>
+                    <span className="stat-label">{type}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <button className="action-btn" onClick={handleDownload}>
-              <svg style={{ width: "22px", height: "22px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Download Redacted Document
-            </button>
+            {/* Action download section */}
+            <div className="download-section">
+              {!expired ? (
+                <>
+                  <button className="action-btn download-btn button-press" onClick={handleDownload}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download Redacted Document
+                  </button>
+                  <div className="timer-badge">
+                    <svg className="clock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>Expires in <span className="countdown-timer">{timeLeft}</span></span>
+                  </div>
+                </>
+              ) : (
+                <div className="expired-container">
+                  <button className="action-btn download-btn expired" disabled>
+                    Download Expired
+                  </button>
+                  <p className="expired-label">This file expired and is no longer available.</p>
+                </div>
+              )}
+            </div>
 
-            <button className="action-btn secondary-btn" onClick={removeFile} style={{ marginTop: "10px" }}>
+            <button className="action-btn secondary-btn" onClick={removeFile}>
               Redact Another Document
             </button>
           </div>
@@ -235,23 +311,17 @@ export default function App() {
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current.click()}
               >
-                <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <h3>Drag & Drop your DOCX here</h3>
-                <p>or click to browse your files (Max 20MB)</p>
-                <button
-                  type="button"
-                  className="upload-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current.click();
-                  }}
-                >
-                  Choose DOCX
-                </button>
+                <div className="upload-icon-container">
+                  <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="12" y1="18" x2="12" y2="12" />
+                    <polyline points="9 15 12 12 15 15" />
+                  </svg>
+                </div>
+                <h3>Select document</h3>
+                <p>Drag & drop your DOCX file here, or <span className="browse-link">browse</span></p>
+                <span className="file-size-hint">Max size 20MB</span>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -261,21 +331,18 @@ export default function App() {
                 />
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+              <div className="selected-file-container fade-in">
                 <div className="selected-file-card">
                   <div className="file-info">
-                    <svg className="doc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                      <polyline points="10 9 9 9 8 9" />
-                    </svg>
+                    <div className="file-icon-wrapper">
+                      <svg className="doc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                    </div>
                     <div className="file-details">
-                      <div className="file-name" title={file.name}>
-                        {file.name}
-                      </div>
-                      <div className="file-size">{formatBytes(file.size)}</div>
+                      <span className="file-name" title={file.name}>{file.name}</span>
+                      <span className="file-size">{formatBytes(file.size)}</span>
                     </div>
                   </div>
                   <button className="remove-btn" onClick={removeFile} title="Remove file">
@@ -286,9 +353,10 @@ export default function App() {
                   </button>
                 </div>
 
-                <button className="action-btn" onClick={handleUploadAndRedact}>
-                  <svg style={{ width: "22px", height: "22px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <button className="action-btn redact-action-btn button-press" onClick={handleUploadAndRedact}>
+                  <svg className="lock-icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                   Redact Document
                 </button>
@@ -300,20 +368,29 @@ export default function App() {
 
       <section className="info-section">
         <div className="info-card">
-          <h4>What does this tool do?</h4>
-          <p>
-            The engine detects personally identifiable information such as names, email addresses, 
-            phone numbers, IP addresses, SSNs, credit cards, and company names, then replaces them 
-            with safe, deterministic synthetic alternatives.
-          </p>
+          <div className="info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <div className="info-text">
+            <h4>Private Processing</h4>
+            <p>Documents are processed in ephemeral memory and deleted automatically after 2 minutes.</p>
+          </div>
         </div>
         <div className="info-card">
-          <h4>Security & Safety</h4>
-          <p>
-            Your original document is never overwritten by the redaction process. File processing occurs 
-            entirely inside secure, ephemeral temporary directories, and generated outputs are pruned from 
-            the server disk immediately after download or expiration.
-          </p>
+          <div className="info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+          </div>
+          <div className="info-text">
+            <h4>Consistent Mapping</h4>
+            <p>Identified entities are replaced with deterministic synthetic alternatives, keeping formatting intact.</p>
+          </div>
         </div>
       </section>
     </div>
