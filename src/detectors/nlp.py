@@ -38,54 +38,53 @@ def is_part_of_legislative_title(text: str, end: int, blacklist_words) -> bool:
 
 class NLPDetector(BaseDetector):
     """
-    PII Detector utilizing spaCy (en_core_web_sm) and Microsoft Presidio Analyzer.
-    Applies custom contextual rules for Person, Company (exchanges/regulators policy),
-    and multi-line Address extraction.
+    PII Detector utilizing spaCy...
     """
 
-   def __init__(self) -> None:
-    # Load spaCy only once through Presidio's NLP engine.
-    try:
-        from presidio_analyzer import AnalyzerEngine
-        from presidio_analyzer.nlp_engine import NlpEngineProvider
+    def __init__(self) -> None:
+        # Load spaCy only once through Presidio's NLP engine.
+        try:
+            from presidio_analyzer import AnalyzerEngine
+            from presidio_analyzer.nlp_engine import NlpEngineProvider
 
-        configuration = {
-            "nlp_engine_name": "spacy",
-            "models": [
-                {
-                    "lang_code": "en",
-                    "model_name": "en_core_web_sm"
-                }
-            ]
-        }
+            configuration = {
+                "nlp_engine_name": "spacy",
+                "models": [
+                    {
+                        "lang_code": "en",
+                        "model_name": "en_core_web_sm"
+                    }
+                ]
+            }
 
-        provider = NlpEngineProvider(
-            nlp_configuration=configuration
-        )
+            provider = NlpEngineProvider(
+                nlp_configuration=configuration
+            )
 
-        nlp_engine = provider.create_engine()
+            nlp_engine = provider.create_engine()
 
-        # Reuse the same spaCy model loaded by Presidio.
-        self.nlp = nlp_engine.nlp["en"]
+            self.nlp = nlp_engine.nlp["en"]
 
-        self.analyzer = AnalyzerEngine(
-            nlp_engine=nlp_engine,
-            supported_languages=["en"]
-        )
+            self.analyzer = AnalyzerEngine(
+                nlp_engine=nlp_engine,
+                supported_languages=["en"]
+            )
 
-    except Exception as e:
-        logger.exception(
-            "Failed to initialize Presidio/spaCy NLP engine."
-        )
-        raise ValueError(
-            f"Failed to initialize Presidio: {e}"
-        ) from e
+        except Exception as e:
+            logger.exception(
+                "Failed to initialize Presidio/spaCy NLP engine."
+            )
+            raise ValueError(
+                f"Failed to initialize Presidio: {e}"
+            ) from e
+
         # Compile context indicators for names
         self.person_context_rx = re.compile(
-            r'\b(?:contact\s+person|chairman|managing\s+director|independent\s+director|director|ceo|cfo|company\s+secretary|compliance\s+officer|auditor|son\s+of|daughter\s+of|wife\s+of)\b',
+            r'\b(?:contact\s+person|chairman|managing\s+director|'
+            r'independent\s+director|director|ceo|cfo|company\s+secretary|'
+            r'compliance\s+officer|auditor|son\s+of|daughter\s+of|wife\s+of)\b',
             re.IGNORECASE
         )
-
         # Exclude public stock exchanges, regulators, and government departments from COMPANY
         self.non_company_rx = re.compile(
             r'\b(?:sebi|securities\s+and\s+exchange\s+board\s+of\s+india|securities\s+and\s+exchange\s+board|registrar\s+of\s+companies|roc|bse|nse|stock\s+exchange|stock\s+exchanges|ministry\s+of|department\s+of|sales\s+tax\s+department|central\s+processing\s+centre|government\s+of\s+india|government\s+ministries|government\s+departments|statutory\s+regulators?)\b',
