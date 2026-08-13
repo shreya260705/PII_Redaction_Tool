@@ -43,34 +43,43 @@ class NLPDetector(BaseDetector):
     and multi-line Address extraction.
     """
 
-    def __init__(self) -> None:
-        # Load spaCy once. Fail with a clear installation message if model is missing.
-        try:
-            import spacy
-            self.nlp = spacy.load("en_core_web_sm")
-        except OSError as e:
-            logger.exception("spaCy model 'en_core_web_sm' is not loaded.")
-            raise ValueError(
-                "spaCy model 'en_core_web_sm' is not installed. "
-                "Please run: python -m spacy download en_core_web_sm"
-            ) from e
+   def __init__(self) -> None:
+    # Load spaCy only once through Presidio's NLP engine.
+    try:
+        from presidio_analyzer import AnalyzerEngine
+        from presidio_analyzer.nlp_engine import NlpEngineProvider
 
-        # Load Presidio Analyzer once
-        try:
-            from presidio_analyzer import AnalyzerEngine
-            from presidio_analyzer.nlp_engine import NlpEngineProvider
+        configuration = {
+            "nlp_engine_name": "spacy",
+            "models": [
+                {
+                    "lang_code": "en",
+                    "model_name": "en_core_web_sm"
+                }
+            ]
+        }
 
-            configuration = {
-                "nlp_engine_name": "spacy",
-                "models": [{"lang_code": "en", "model_name": "en_core_web_sm"}]
-            }
-            provider = NlpEngineProvider(nlp_configuration=configuration)
-            nlp_engine = provider.create_engine()
-            self.analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["en"])
-        except Exception as e:
-            logger.exception("Failed to initialize Presidio Analyzer Engine.")
-            raise ValueError(f"Failed to initialize Presidio: {e}") from e
+        provider = NlpEngineProvider(
+            nlp_configuration=configuration
+        )
 
+        nlp_engine = provider.create_engine()
+
+        # Reuse the same spaCy model loaded by Presidio.
+        self.nlp = nlp_engine.nlp["en"]
+
+        self.analyzer = AnalyzerEngine(
+            nlp_engine=nlp_engine,
+            supported_languages=["en"]
+        )
+
+    except Exception as e:
+        logger.exception(
+            "Failed to initialize Presidio/spaCy NLP engine."
+        )
+        raise ValueError(
+            f"Failed to initialize Presidio: {e}"
+        ) from e
         # Compile context indicators for names
         self.person_context_rx = re.compile(
             r'\b(?:contact\s+person|chairman|managing\s+director|independent\s+director|director|ceo|cfo|company\s+secretary|compliance\s+officer|auditor|son\s+of|daughter\s+of|wife\s+of)\b',
