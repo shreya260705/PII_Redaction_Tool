@@ -54,6 +54,7 @@ class ExtractedDocument:
     """
     metadata: DocumentMetadata
     blocks: List[DocumentBlock]
+    doc: Any = None
 
 
 @dataclass

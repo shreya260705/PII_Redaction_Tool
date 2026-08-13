@@ -201,7 +201,7 @@ class DocumentReader:
         )
 
         logger.info(f"Extraction complete for {path.name}. Total blocks: {len(blocks)}")
-        return ExtractedDocument(metadata=metadata, blocks=blocks)
+        return ExtractedDocument(metadata=metadata, blocks=blocks, doc=doc)
 
 
 def main() -> None:
