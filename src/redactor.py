@@ -134,6 +134,7 @@ class RedactionMapper:
     def __init__(self, validators: Optional[List[tuple]] = None) -> None:
         self.mappings: Dict[str, str] = {}
         self.validators = validators or []
+        self.validation_cache: Dict[tuple, bool] = {}
 
     def get_replacement(self, original_text: str, pii_type: str) -> str:
         normalized = original_text.strip().lower()
@@ -162,18 +163,34 @@ class RedactionMapper:
     def _is_safe_replacement(self, replacement: str, target_type: str) -> bool:
         """
         Ensures a synthetic value does not trigger detectors for other types.
+        Results are cached so the same replacement is not analyzed repeatedly.
         """
+
+        cache_key = (target_type, replacement)
+
+        if cache_key in self.validation_cache:
+            return self.validation_cache[cache_key]
+
         for detector_type, detector in self.validators:
             if detector_type == target_type:
                 continue
+
             try:
                 matches = detector.detect(replacement)
-                # Only check if it matched the validator's own type
-                type_matches = [m for m in matches if m.pii_type == detector_type]
+
+                type_matches = [
+                    m for m in matches
+                    if m.pii_type == detector_type
+                ]
+
                 if type_matches:
+                    self.validation_cache[cache_key] = False
                     return False
+
             except Exception:
                 continue
+
+        self.validation_cache[cache_key] = True
         return True
 
     def _generate_synthetic(self, original: str, pii_type: str, rnd: random.Random) -> str:
@@ -527,28 +544,40 @@ class RedactionEngine:
     """
 
     def __init__(self) -> None:
+    # Create each detector only once.
+    # NLPDetector is especially expensive because it loads spaCy + Presidio.
+        email_detector = EmailDetector()
+        phone_detector = PhoneDetector()
+        ip_detector = IPAddressDetector()
+        ssn_detector = SSNDetector()
+        credit_card_detector = CreditCardDetector()
+        dob_detector = DateOfBirthDetector()
+        nlp_detector = NLPDetector()
+
         self.detectors = [
-            EmailDetector(),
-            PhoneDetector(),
-            IPAddressDetector(),
-            SSNDetector(),
-            CreditCardDetector(),
-            DateOfBirthDetector(),
-            NLPDetector(),
+            email_detector,
+            phone_detector,
+            ip_detector,
+            ssn_detector,
+            credit_card_detector,
+            dob_detector,
+            nlp_detector,
         ]
 
-        # Validators used in RedactionMapper to ensure safety
+        # Reuse the SAME detector instances for validation.
+        # Do NOT create additional NLPDetector instances.
         validators = [
-            ("EMAIL", EmailDetector()),
-            ("PHONE", PhoneDetector()),
-            ("IP_ADDRESS", IPAddressDetector()),
-            ("SSN", SSNDetector()),
-            ("CREDIT_CARD", CreditCardDetector()),
-            ("DATE_OF_BIRTH", DateOfBirthDetector()),
-            ("PERSON", NLPDetector()),
-            ("COMPANY", NLPDetector()),
-            ("ADDRESS", NLPDetector()),
+            ("EMAIL", email_detector),
+            ("PHONE", phone_detector),
+            ("IP_ADDRESS", ip_detector),
+            ("SSN", ssn_detector),
+            ("CREDIT_CARD", credit_card_detector),
+            ("DATE_OF_BIRTH", dob_detector),
+            ("PERSON", nlp_detector),
+            ("COMPANY", nlp_detector),
+            ("ADDRESS", nlp_detector),
         ]
+
         self.mapper = RedactionMapper(validators=validators)
 
     def redact(self, input_path: str, output_path: str) -> Dict[str, Any]:
