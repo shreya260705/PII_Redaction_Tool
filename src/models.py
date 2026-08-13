@@ -54,3 +54,18 @@ class ExtractedDocument:
     """
     metadata: DocumentMetadata
     blocks: List[DocumentBlock]
+
+
+@dataclass
+class PIIMatch:
+    """
+    Represents a detected PII instance within a text block.
+    The start/end offsets refer to character positions in DocumentBlock.text.
+    """
+    pii_type: str  # "EMAIL", "PHONE", "IP_ADDRESS", "SSN", "CREDIT_CARD", "DATE_OF_BIRTH"
+    text: str  # Matched substring
+    start: int  # Character start offset in DocumentBlock.text
+    end: int  # Character end offset in DocumentBlock.text
+    confidence: float  # Confidence score (0.0 to 1.0)
+    detector: str  # Name of the detector
+
