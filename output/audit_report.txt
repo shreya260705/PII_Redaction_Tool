@@ -1,0 +1,1068 @@
+=== PII DETECTION AUDIT REPORT ===
+
+=== DETECTOR DISTRIBUTION ===
+  ADDRESS:custom_address_rules: 58
+  COMPANY:nlp_presidio_company: 113
+  COMPANY:regex_company_fallback: 180
+  EMAIL:email_regex: 70
+  PERSON:nlp_presidio_person: 399
+  PHONE:phone_indian_context: 48
+
+=== CONFIDENCE DISTRIBUTION ===
+  0.90-1.00: 475
+  0.80-0.89: 393
+  0.70-0.79: 0
+  below 0.70: 0
+
+
+=== REPRESENTATIVE SAMPLES FOR PERSON ===
+Displaying 30 representative matches:
+
+Sample #1:
+  PII Type: PERSON
+  Masked Text: S*****k M*******r C*****y
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 2)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: S*****k M*******r C*****y Secretary and Compliance Officer
+--------------------------------------------------
+Sample #2:
+  PII Type: PERSON
+  Masked Text: S*****k M*******r C*****y
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 3)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: S*****k M*******r C*****y Secretary and Compliance Officer
+--------------------------------------------------
+Sample #3:
+  PII Type: PERSON
+  Masked Text: S*****k M*******r
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 28)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Contact Person: S*****k M*******r , Company Secretary and Compliance Officer; Telephone: + ** ** **** ****;
+--------------------------------------------------
+Sample #4:
+  PII Type: PERSON
+  Masked Text: K****n R*****i/A*****t D***n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 2)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... .com
+Investor grievance email: c***********@icicisecurities.com
+Contact Person: K****n R*****i/A*****t D***n SEBI Registration Number: INM*********
+--------------------------------------------------
+Sample #5:
+  PII Type: PERSON
+  Masked Text: K****n R*****i/A*****t D***n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 3)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... .com
+Investor grievance email: c***********@icicisecurities.com
+Contact Person: K****n R*****i/A*****t D***n SEBI Registration Number: INM*********
+--------------------------------------------------
+Sample #6:
+  PII Type: PERSON
+  Masked Text: K****n R*****i/A*****t D***n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 4)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... .com
+Investor grievance email: c***********@icicisecurities.com
+Contact Person: K****n R*****i/A*****t D***n SEBI Registration Number: INM*********
+--------------------------------------------------
+Sample #7:
+  PII Type: PERSON
+  Masked Text: K****n R*****i/A*****t D***n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 5)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... .com
+Investor grievance email: c***********@icicisecurities.com
+Contact Person: K****n R*****i/A*****t D***n SEBI Registration Number: INM*********
+--------------------------------------------------
+Sample #8:
+  PII Type: PERSON
+  Masked Text: S****i G***********n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 6)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... nvestor grievance e-mail: k*******************@in.mpms.mufg.com
+Contact Person: S****i G***********n SEBI Registration Number: INR*********
+--------------------------------------------------
+Sample #9:
+  PII Type: PERSON
+  Masked Text: S****i G***********n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 7)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... nvestor grievance e-mail: k*******************@in.mpms.mufg.com
+Contact Person: S****i G***********n SEBI Registration Number: INR*********
+--------------------------------------------------
+Sample #10:
+  PII Type: PERSON
+  Masked Text: S*****h B*****t
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 226)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Certain of our SMs including, S*****h B*****t , CEO, A**d J***i, CFO, S*****k M*******r, CS and Compliance Officer, and Ganesh ...
+--------------------------------------------------
+Sample #11:
+  PII Type: PERSON
+  Masked Text: A**d J***i
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 226)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Certain of our SMs including, S*****h B*****t, CEO, A**d J***i , CFO, S*****k M*******r, CS and Compliance Officer, and Ganesh Prasad, Technica ...
+--------------------------------------------------
+Sample #12:
+  PII Type: PERSON
+  Masked Text: S*****k M*******r
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 226)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Certain of our SMs including, S*****h B*****t, CEO, A**d J***i, CFO, S*****k M*******r , CS and Compliance Officer, and Ganesh Prasad, Technical Director, are also our ...
+--------------------------------------------------
+Sample #13:
+  PII Type: PERSON
+  Masked Text: K****l S******a H***e
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 7, Cell: 1)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: The chairman and executive director of our Company, being K****l S******a H***e . For further details, see “Our Management – Board of Directors” on page ***
+--------------------------------------------------
+Sample #14:
+  PII Type: PERSON
+  Masked Text: S*****k M*******r
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 10, Cell: 1)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: The company secretary and compliance officer of our Company, being S*****k M*******r . For further details, see “General Information” and “Our Management – Key Manag ...
+--------------------------------------------------
+Sample #15:
+  PII Type: PERSON
+  Masked Text: R***t K****l H***e
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 15, Cell: 1)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: The joint managing director of our Company being, R***t K****l H***e . For further details, see “Our Management” on page ***
+--------------------------------------------------
+Sample #16:
+  PII Type: PERSON
+  Masked Text: R****h K****l H***e
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 17, Cell: 1)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: The managing director of our Company, namely R****h K****l H***e . For further information, see “Our Management – Board of Directors” on page ***
+--------------------------------------------------
+Sample #17:
+  PII Type: PERSON
+  Masked Text: R****h K****l H***e
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 441)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ...  along with corresponding challan for regularization as director in relation to R****h K****l H***e dated September **, ****;
+--------------------------------------------------
+Sample #18:
+  PII Type: PERSON
+  Masked Text: R***t K****l H***e
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 442)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... corresponding RoC challan for appointment as additional director in relation to R***t K****l H***e dated November *, ****;
+--------------------------------------------------
+Sample #19:
+  PII Type: PERSON
+  Masked Text: R***t K****l H***e
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 443)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: ... ith the corresponding RoC challan for regularisation as director in relation to R***t K****l H***e dated September **, ****;
+--------------------------------------------------
+Sample #20:
+  PII Type: PERSON
+  Masked Text: S*****h B*****t
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 488)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Certain of our SMs including, S*****h B*****t , CEO, A**d J***i, CFO, S*****k M*******r, CS and Compliance Officer, and Ganesh ...
+--------------------------------------------------
+Sample #21:
+  PII Type: PERSON
+  Masked Text: A**d J***i
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 488)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Certain of our SMs including, S*****h B*****t, CEO, A**d J***i , CFO, S*****k M*******r, CS and Compliance Officer, and Ganesh Prasad, Technica ...
+--------------------------------------------------
+Sample #22:
+  PII Type: PERSON
+  Masked Text: S*****k M*******r
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 488)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Certain of our SMs including, S*****h B*****t, CEO, A**d J***i, CFO, S*****k M*******r , CS and Compliance Officer, and Ganesh Prasad, Technical Director, are also our ...
+--------------------------------------------------
+Sample #23:
+  PII Type: PERSON
+  Masked Text: K****l S******a H***e
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 685)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Our Promoter, Chairman and Executive Director, K****l S******a H***e , and our Promoter, P****a H***e have been unable to trace copies of certain doc ...
+--------------------------------------------------
+Sample #24:
+  PII Type: PERSON
+  Masked Text: S*****k M*******r
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 741)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: S*****k M*******r is our Company Secretary and Compliance Officer. His contact details are as set ...
+--------------------------------------------------
+Sample #25:
+  PII Type: PERSON
+  Masked Text: K****n R*****i/A*****t D***n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 763)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Contact person: K****n R*****i/A*****t D***n
+--------------------------------------------------
+Sample #26:
+  PII Type: PERSON
+  Masked Text: K****n R*****i/A*****t D***n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 788)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Contact person: K****n R*****i/A*****t D***n
+--------------------------------------------------
+Sample #27:
+  PII Type: PERSON
+  Masked Text: S****i G***********n
+  Confidence: 0.95
+  Detector: nlp_presidio_person
+  Block Type: paragraph
+  Location: Paragraph (Index: 804)
+  Inside Table: False
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: Website: www.in.mpms.mufg.com Contact Person: S****i G***********n SEBI Registration No.: INR*********
+--------------------------------------------------
+Sample #28:
+  PII Type: PERSON
+  Masked Text: K****L S******A H***E
+  Confidence: 0.85
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 0)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: OUR PROMOTERS: K****L S******A H***E , P****A K****L H***E, R****H K****L H***E, R***T K****L H***E, RAKHI GIRIJA SHE ...
+--------------------------------------------------
+Sample #29:
+  PII Type: PERSON
+  Masked Text: P****A K****L H***E
+  Confidence: 0.85
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 0)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: OUR PROMOTERS: K****L S******A H***E, P****A K****L H***E , R****H K****L H***E, R***T K****L H***E, RAKHI GIRIJA SHETTY, DHAULAGIRI FAMIL ...
+--------------------------------------------------
+Sample #30:
+  PII Type: PERSON
+  Masked Text: R****H K****L H***E
+  Confidence: 0.85
+  Detector: nlp_presidio_person
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 0)
+  Inside Table: True
+  Detector Signal: spaCy PERSON NER + contextual proximity boost if available
+  Surrounding Context: OUR PROMOTERS: K****L S******A H***E, P****A K****L H***E, R****H K****L H***E , R***T K****L H***E, RAKHI GIRIJA SHETTY, DHAULAGIRI FAMILY TRUST, EVEREST FAMI ...
+--------------------------------------------------
+
+=== REPRESENTATIVE SAMPLES FOR COMPANY ===
+Displaying 30 representative matches:
+
+Sample #1:
+  PII Type: COMPANY
+  Masked Text: K*H I***********L L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: paragraph
+  Location: Paragraph (Index: 11)
+  Inside Table: False
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: K*H I***********L L*****D CORPORATE IDENTITY NUMBER: U*****PN****PLC******
+--------------------------------------------------
+Sample #2:
+  PII Type: COMPANY
+  Masked Text: T***T A*D
+W******O I********L P**K V* P*****E L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 0)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... U FAMILY TRUST, BROAD FAMILY TRUST, ANNAPURNA FAMILY TRUST, KANCHENJUNGA FAMILY T***T A*D
+W******O I********L P**K V* P*****E L*****D
+--------------------------------------------------
+Sample #3:
+  PII Type: COMPANY
+  Masked Text: T***T A*D
+W******O I********L P**K V* P*****E L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 1)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... U FAMILY TRUST, BROAD FAMILY TRUST, ANNAPURNA FAMILY TRUST, KANCHENJUNGA FAMILY T***T A*D
+W******O I********L P**K V* P*****E L*****D
+--------------------------------------------------
+Sample #4:
+  PII Type: COMPANY
+  Masked Text: K*****e & P****t L*P
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 0)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: *As certified by K*****e & P****t L*P , Chartered Accountants, our Statutory Auditors, by way of their certificate dat ...
+--------------------------------------------------
+Sample #5:
+  PII Type: COMPANY
+  Masked Text: K*****e & P****t L*P
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 1)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: *As certified by K*****e & P****t L*P , Chartered Accountants, our Statutory Auditors, by way of their certificate dat ...
+--------------------------------------------------
+Sample #6:
+  PII Type: COMPANY
+  Masked Text: K*****e & P****t L*P
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 2)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: *As certified by K*****e & P****t L*P , Chartered Accountants, our Statutory Auditors, by way of their certificate dat ...
+--------------------------------------------------
+Sample #7:
+  PII Type: COMPANY
+  Masked Text: T***T A*D
+W******O I********L P**K V* P*****E L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 2)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... U FAMILY TRUST, BROAD FAMILY TRUST, ANNAPURNA FAMILY TRUST, KANCHENJUNGA FAMILY T***T A*D
+W******O I********L P**K V* P*****E L*****D
+--------------------------------------------------
+Sample #8:
+  PII Type: COMPANY
+  Masked Text: T***T A*D
+W******O I********L P**K V* P*****E L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 3)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... U FAMILY TRUST, BROAD FAMILY TRUST, ANNAPURNA FAMILY TRUST, KANCHENJUNGA FAMILY T***T A*D
+W******O I********L P**K V* P*****E L*****D
+--------------------------------------------------
+Sample #9:
+  PII Type: COMPANY
+  Masked Text: T***T A*D
+W******O I********L P**K V* P*****E L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 4)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... U FAMILY TRUST, BROAD FAMILY TRUST, ANNAPURNA FAMILY TRUST, KANCHENJUNGA FAMILY T***T A*D
+W******O I********L P**K V* P*****E L*****D
+--------------------------------------------------
+Sample #10:
+  PII Type: COMPANY
+  Masked Text: I***I	S********s L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 8, Cell: 1)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: I***I	S********s L*****d
+--------------------------------------------------
+Sample #11:
+  PII Type: COMPANY
+  Masked Text: I***I	S********s L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 8, Cell: 2)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: I***I	S********s L*****d
+--------------------------------------------------
+Sample #12:
+  PII Type: COMPANY
+  Masked Text: I***I S********s L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 2)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: I***I S********s L*****d ICICI Venture House, A*******b M*****e M**g, P********i, M****i ******, M****** ...
+--------------------------------------------------
+Sample #13:
+  PII Type: COMPANY
+  Masked Text: T***T A*D
+W******O I********L P**K V* P*****E L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 5)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... U FAMILY TRUST, BROAD FAMILY TRUST, ANNAPURNA FAMILY TRUST, KANCHENJUNGA FAMILY T***T A*D
+W******O I********L P**K V* P*****E L*****D
+--------------------------------------------------
+Sample #14:
+  PII Type: COMPANY
+  Masked Text: T***T A*D
+W******O I********L P**K V* P*****E L*****D
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 6)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... U FAMILY TRUST, BROAD FAMILY TRUST, ANNAPURNA FAMILY TRUST, KANCHENJUNGA FAMILY T***T A*D
+W******O I********L P**K V* P*****E L*****D
+--------------------------------------------------
+Sample #15:
+  PII Type: COMPANY
+  Masked Text: K*****e & P****t L*P
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 3)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: *As certified by K*****e & P****t L*P , Chartered Accountants, our Statutory Auditors, by way of their certificate dat ...
+--------------------------------------------------
+Sample #16:
+  PII Type: COMPANY
+  Masked Text: K*****e & P****t L*P
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 4)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: *As certified by K*****e & P****t L*P , Chartered Accountants, our Statutory Auditors, by way of their certificate dat ...
+--------------------------------------------------
+Sample #17:
+  PII Type: COMPANY
+  Masked Text: K*****e & P****t L*P
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 5)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: *As certified by K*****e & P****t L*P , Chartered Accountants, our Statutory Auditors, by way of their certificate dat ...
+--------------------------------------------------
+Sample #18:
+  PII Type: COMPANY
+  Masked Text: K*****e & P****t L*P
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 6)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: *As certified by K*****e & P****t L*P , Chartered Accountants, our Statutory Auditors, by way of their certificate dat ...
+--------------------------------------------------
+Sample #19:
+  PII Type: COMPANY
+  Masked Text: I***a L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 4, Cell: 0)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... proposed to be listed on the BSE Limited (“BSE”) and National Stock Exchange of I***a L*****d (“NSE”, together with BSE, the “Stock Exchanges”). For the purposes of the Offe ...
+--------------------------------------------------
+Sample #20:
+  PII Type: COMPANY
+  Masked Text: I***a L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 4, Cell: 1)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... proposed to be listed on the BSE Limited (“BSE”) and National Stock Exchange of I***a L*****d (“NSE”, together with BSE, the “Stock Exchanges”). For the purposes of the Offe ...
+--------------------------------------------------
+Sample #21:
+  PII Type: COMPANY
+  Masked Text: I***a L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 4, Cell: 2)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... proposed to be listed on the BSE Limited (“BSE”) and National Stock Exchange of I***a L*****d (“NSE”, together with BSE, the “Stock Exchanges”). For the purposes of the Offe ...
+--------------------------------------------------
+Sample #22:
+  PII Type: COMPANY
+  Masked Text: I***a L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 4, Cell: 3)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... proposed to be listed on the BSE Limited (“BSE”) and National Stock Exchange of I***a L*****d (“NSE”, together with BSE, the “Stock Exchanges”). For the purposes of the Offe ...
+--------------------------------------------------
+Sample #23:
+  PII Type: COMPANY
+  Masked Text: I***a L*****d
+  Confidence: 0.98
+  Detector: regex_company_fallback
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 4, Cell: 4)
+  Inside Table: True
+  Detector Signal: Regex fallback match for corporate suffixes
+  Surrounding Context: ... proposed to be listed on the BSE Limited (“BSE”) and National Stock Exchange of I***a L*****d (“NSE”, together with BSE, the “Stock Exchanges”). For the purposes of the Offe ...
+--------------------------------------------------
+Sample #24:
+  PII Type: COMPANY
+  Masked Text: A*-A****a S********r C*
+  Confidence: 0.95
+  Detector: nlp_presidio_company
+  Block Type: paragraph
+  Location: Paragraph (Index: 319)
+  Inside Table: False
+  Detector Signal: spaCy ORG NER + company suffix/context filters
+  Surrounding Context: Note: Our top ** customers include A*-A****a S********r C* ., B****t B****e L*****d; CG Power and I********l S*******s L*****d; E******s T* ...
+--------------------------------------------------
+Sample #25:
+  PII Type: COMPANY
+  Masked Text: P*****m A********s
+  Confidence: 0.95
+  Detector: nlp_presidio_company
+  Block Type: paragraph
+  Location: Paragraph (Index: 347)
+  Inside Table: False
+  Detector Signal: spaCy ORG NER + company suffix/context filters
+  Surrounding Context: ... B; C****s C*********n; E*****s B**k I***a L*****d; H******o I********s L*****d; P*****m A********s ; S***i C****r P******s P*****e L*****d; Union Copper Rod LLC; and V*****a L**** ...
+--------------------------------------------------
+Sample #26:
+  PII Type: COMPANY
+  Masked Text: L*P
+  Confidence: 0.95
+  Detector: nlp_presidio_company
+  Block Type: paragraph
+  Location: Paragraph (Index: 863)
+  Inside Table: False
+  Detector Signal: spaCy ORG NER + company suffix/context filters
+  Surrounding Context: ...  consent dated November **, **** from our Statutory Auditors, Kirtane & Pandit, L*P , Chartered Accountants, to include their name as required under section ** (*)  ...
+--------------------------------------------------
+Sample #27:
+  PII Type: COMPANY
+  Masked Text: H****e T**e & A********s F**t N*
+  Confidence: 0.95
+  Detector: nlp_presidio_company
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 0)
+  Inside Table: True
+  Detector Signal: spaCy ORG NER + company suffix/context filters
+  Surrounding Context: H****e T**e & A********s F**t N* . ***, Sai Complex Shaniwar Peth, Pune – *** *** Maharashtra, India
+E-mail: h*** ...
+--------------------------------------------------
+Sample #28:
+  PII Type: COMPANY
+  Masked Text: E****Y S***E C*****L O* O*R C*****Y
+  Confidence: 0.9
+  Detector: nlp_presidio_company
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 0)
+  Inside Table: True
+  Detector Signal: spaCy ORG NER + company suffix/context filters
+  Surrounding Context: ... HE “OFFER FOR SALE”). THE OFFER SHALL CONSTITUTE [●]% OF THE POST-OFFER PAID UP E****Y S***E C*****L O* O*R C*****Y .
+THE FACE VALUE OF THE EQUITY SHARES IS ₹* EACH. THE OFFER PRICE IS [●] TIMES T ...
+--------------------------------------------------
+Sample #29:
+  PII Type: COMPANY
+  Masked Text: E****Y S***E C*****L O* O*R C*****Y
+  Confidence: 0.9
+  Detector: nlp_presidio_company
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 1)
+  Inside Table: True
+  Detector Signal: spaCy ORG NER + company suffix/context filters
+  Surrounding Context: ... HE “OFFER FOR SALE”). THE OFFER SHALL CONSTITUTE [●]% OF THE POST-OFFER PAID UP E****Y S***E C*****L O* O*R C*****Y .
+THE FACE VALUE OF THE EQUITY SHARES IS ₹* EACH. THE OFFER PRICE IS [●] TIMES T ...
+--------------------------------------------------
+Sample #30:
+  PII Type: COMPANY
+  Masked Text: E****Y S***E C*****L O* O*R C*****Y
+  Confidence: 0.9
+  Detector: nlp_presidio_company
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 2)
+  Inside Table: True
+  Detector Signal: spaCy ORG NER + company suffix/context filters
+  Surrounding Context: ... HE “OFFER FOR SALE”). THE OFFER SHALL CONSTITUTE [●]% OF THE POST-OFFER PAID UP E****Y S***E C*****L O* O*R C*****Y .
+THE FACE VALUE OF THE EQUITY SHARES IS ₹* EACH. THE OFFER PRICE IS [●] TIMES T ...
+--------------------------------------------------
+
+=== REPRESENTATIVE SAMPLES FOR ADDRESS ===
+Displaying 30 representative matches:
+
+Sample #1:
+  PII Type: ADDRESS
+  Masked Text: Taluk***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 0)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: **/*, **/* and **/* Village Birdewadi Chakan T****a - K**d P**e – *** ***
+M*********a, I***a
+--------------------------------------------------
+Sample #2:
+  PII Type: ADDRESS
+  Masked Text: Taluk***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 26)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: Registered Office: **/*, **/* and **/*, Village Birdewadi, Chakan T****a - K**d, P**e – *** ***, M*********a, I***a ;
+--------------------------------------------------
+Sample #3:
+  PII Type: ADDRESS
+  Masked Text: Build***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 0)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: N****a W****h M********t L*****d
+*** - ***, Wing A, B******g No *, I*****e B*C, G* B***k, B****a K***a C*****x, B****a E**t, M****i ******, M*********a, I***a Tel: +** ** ********
+E-mail: k******@nuvama.com
+Website: www.nuvama.com
+Investo ...
+--------------------------------------------------
+Sample #4:
+  PII Type: ADDRESS
+  Masked Text: Build***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: N****a W****h M********t L*****d
+*** - ***, Wing A, B******g No *, I*****e B*C, G* B***k, B****a K***a C*****x, B****a E**t, M****i ******, M*********a, I***a Tel: +** ** ********
+E-mail: k******@nuvama.com
+Website: www.nuvama.com
+Investo ...
+--------------------------------------------------
+Sample #5:
+  PII Type: ADDRESS
+  Masked Text: Floor***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 6)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ... *e L*****d
+(F******y L**k I****e I***a P*****e L*****d)
+C-***, Embassy ***, *st F***r, L* B* S* M**g, V******i (W**t), M****i ******, (M*********a), I***a Tel: +** ***** *****
+E-mail: k*******************@in.mpms.mufg.com
+Website: www ...
+--------------------------------------------------
+Sample #6:
+  PII Type: ADDRESS
+  Masked Text: Floor***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 7)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ... *e L*****d
+(F******y L**k I****e I***a P*****e L*****d)
+C-***, Embassy ***, *st F***r, L* B* S* M**g, V******i (W**t), M****i ******, (M*********a), I***a Tel: +** ***** *****
+E-mail: k*******************@in.mpms.mufg.com
+Website: www ...
+--------------------------------------------------
+Sample #7:
+  PII Type: ADDRESS
+  Masked Text: Taluk***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ...  having its registered office at **/*, **/* and **/*, Village Birdewadi, Chakan T****a - K**d, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #8:
+  PII Type: ADDRESS
+  Masked Text: Taluk***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 29, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ... office of our Company located at **/*, **/* and **/*, Village Birdewadi, Chakan T****a-K**d, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #9:
+  PII Type: ADDRESS
+  Masked Text: Plot ***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 11, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: Our manufacturing facility located at P**t No. J*-**, T****a I********l A**a, V*****e P****e, T****a P****l, R****d – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #10:
+  PII Type: ADDRESS
+  Masked Text: Taluk***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 48)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ...  having its Registered Office at **/*, **/* and **/*, Village Birdewadi, Chakan T****a - K**d, P**e – *** ***, M*********a, I***a and i*s C*******e O****e at ***, T***r *, M******l B******s C****e, O*f P****d F***s, B***r, P**e – *** ***, M*********a, I***a .
+--------------------------------------------------
+Sample #11:
+  PII Type: ADDRESS
+  Masked Text: Taluk***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 12, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ... anufacturing facility located at **/*, **/* and **/*, Village Birdewadi, Chakan T****a - K**d, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #12:
+  PII Type: ADDRESS
+  Masked Text: Plot ***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 13, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: Our manufacturing facility located at P**t No. *, C****n I********l A**a, P***e I*, V*****e K*******e, T****a K**d, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #13:
+  PII Type: ADDRESS
+  Masked Text: Plot ***4 301
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 526)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: The Company is expanding by setting up a plant at P**t No. F*-***, S**a P****r I********l P**k, M***e P***e K***d, T****a P****r, D**t – A********r, M*********a – *** *** . The proposed plant will be developed in phases: Phase I, named A***a I, with a ...
+--------------------------------------------------
+Sample #14:
+  PII Type: ADDRESS
+  Masked Text: Build***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 732)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: PCNTDA Green B******g B***k A* 1*t and 2*d f***r N**r A****i R*****y S*****n A****i, P**e – *** *** M*********a, I***a
+--------------------------------------------------
+Sample #15:
+  PII Type: ADDRESS
+  Masked Text: S. no***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: S*. no. ***/ ***, P*********l, D****n G******a S*****y, l**e no. * P*****t R**d, o******e P*C b********l c***t, D****n G******a, P**e – *** *** M*********a, I***a
+--------------------------------------------------
+Sample #16:
+  PII Type: ADDRESS
+  Masked Text: socie***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 2, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ** B***a M***e, NCL co-operative housing s*****y, P*******i, P****n, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #17:
+  PII Type: ADDRESS
+  Masked Text: Apart***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 3, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: Pushpakamal A*******t, F**t – *, S*. no. ***/ ***, P*****t R**d L**e no. *, S*****i N***r, D****n G******a, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #18:
+  PII Type: ADDRESS
+  Masked Text: S. no***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 4, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: S*. no. ***/ ***, P*********l, D****n G******a S*****y, l**e no.
+* P*****t R**d, o******e P*C b********l c***t, E********e, D****n G******a, P**e – *** *** M*********a, I***a
+--------------------------------------------------
+Sample #19:
+  PII Type: ADDRESS
+  Masked Text: Road,***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 5, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: Pratik Bunglow, Senapati Bapat R**d, b****d S****a H***l, S**********r, M***l C****y, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #20:
+  PII Type: ADDRESS
+  Masked Text: Apart***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 6, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ***, Gopalkrupa A*******t, B****e c****y, P*****t R**d, E********e, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #21:
+  PII Type: ADDRESS
+  Masked Text: Road,***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 7, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: A-***, JK R**d, M***l R*******y, H***r, G********a, B****l – *** ***, M****a P*****h, I***a
+--------------------------------------------------
+Sample #22:
+  PII Type: ADDRESS
+  Masked Text: Socie***India
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 8, Cell: 3)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: A**, Abhimanshree S*****y, P****n R**d, P**e – *** ***, M*********a, I***a
+--------------------------------------------------
+Sample #23:
+  PII Type: ADDRESS
+  Masked Text: Taluk***0 501
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 742)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: T****a K**d, D******t P**e – *** ***
+--------------------------------------------------
+Sample #24:
+  PII Type: ADDRESS
+  Masked Text: Compl***0 051
+  Confidence: 0.95
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 777)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: Bandra Kurla C*****x, B****a E**t M****i *** ***
+--------------------------------------------------
+Sample #25:
+  PII Type: ADDRESS
+  Masked Text: RoC i***lding
+  Confidence: 0.85
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 13, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: The Prospectus to be filed with the R*C in a********e with the C*******s A*t, ****, and the S**I I**R R*********s c********g, i***r a**a, the O***r P***e t**t i* d********d at the e*d of the B**k B******g Process, the size of the Offer and certain other information, including any add ...
+--------------------------------------------------
+Sample #26:
+  PII Type: ADDRESS
+  Masked Text: state***India
+  Confidence: 0.85
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 26, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: Government of a s***e of I***a .
+--------------------------------------------------
+Sample #27:
+  PII Type: ADDRESS
+  Masked Text: India***weden
+  Confidence: 0.85
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 99)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: All references in this Red Herring Prospectus to “ I***a” a*e to the R******c of I***a and i*s t*********s and p*********s and a*l r********s h****n to the “G********t”, “I****n G********t”, “G*I”, “C*****l G********t” o* the “S***e G********t” a*e to the G********t of I***a, c*****l o* s***e, a* a********e. A*l r********s h****n to the “U*”, “U*A”, the “U*.S*.” o* the “U****d S****s” a*e to the U****d S****s of A*****a and i*s t*********s and p*********s. A*l r********s h****n to “E*” a*e to the E******n U***n and i*s t*********s and p*********s. A*l r********s h****n to “S****n” a*e to S****n and its territories and possessions.
+--------------------------------------------------
+Sample #28:
+  PII Type: ADDRESS
+  Masked Text: 411 0***India
+  Confidence: 0.85
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 1, Cell: 1)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ***, Tower *, Montreal Business Centre, Off Pallod Farms, Baner Pune – *** ***
+M*********a, I***a
+--------------------------------------------------
+Sample #29:
+  PII Type: ADDRESS
+  Masked Text: 411 0***India
+  Confidence: 0.85
+  Detector: custom_address_rules
+  Block Type: paragraph
+  Location: Paragraph (Index: 27)
+  Inside Table: False
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: ... Office: ***, Tower *, Montreal Business Centre, Off Pallod Farms, Baner, Pune – *** ***, M*********a, I***a ;
+--------------------------------------------------
+Sample #30:
+  PII Type: ADDRESS
+  Masked Text: Prabh***India
+  Confidence: 0.85
+  Detector: custom_address_rules
+  Block Type: table_cell
+  Location: Table Cell (Table Index: 0, Row: 14, Cell: 2)
+  Inside Table: True
+  Detector Signal: PIN code + structural keywords + GPE alignment scoring
+  Surrounding Context: I***I S********s L*****d
+ICICI Venture House, A*******b M*****e M**g, P********i, M****i ******, M*********a, I***a Tel: +** ** **** ****
+E-mail: k**@icicisecurities.com
+Website: www.icicisecurit ...
+--------------------------------------------------

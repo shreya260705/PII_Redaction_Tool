@@ -1,4 +1,5 @@
 import logging
+import re
 import sys
 from collections import Counter
 from typing import List
@@ -14,6 +15,7 @@ from src.detectors.structured import (
     CreditCardDetector,
     DateOfBirthDetector,
 )
+from src.detectors.nlp import NLPDetector
 
 # Configure simple logging
 logging.basicConfig(level=logging.WARNING)
@@ -31,7 +33,6 @@ def mask_pii(text: str, pii_type: str) -> str:
         return "***"
         
     elif pii_type == "PHONE":
-        # Keep first 3 and last 3 chars, mask the rest
         if len(text) <= 6:
             return "***"
         return f"{text[:3]}***{text[-3:]}"
@@ -49,7 +50,6 @@ def mask_pii(text: str, pii_type: str) -> str:
         return "***"
         
     elif pii_type == "CREDIT_CARD":
-        # E.g. formatted with spaces or hyphens
         clean_text = text.replace("-", "").replace(" ", "")
         if len(clean_text) >= 4:
             return f"****-****-****-{clean_text[-4:]}"
@@ -59,6 +59,30 @@ def mask_pii(text: str, pii_type: str) -> str:
         if len(text) >= 4:
             return f"**/**/{text[-4:]}"
         return "**/**/****"
+
+    elif pii_type == "PERSON" or pii_type == "COMPANY":
+        # Mask middle characters of each name/word token
+        parts = text.split()
+        masked_parts = []
+        for p in parts:
+            # Strip punctuation attached to word if any
+            clean_word = re.sub(r'[^\w]', '', p)
+            if not clean_word:
+                masked_parts.append(p)
+                continue
+            if len(clean_word) <= 2:
+                masked_p = clean_word[0] + "*"
+            else:
+                masked_p = clean_word[0] + "***" + clean_word[-1]
+            # preserve punctuation around it
+            masked_parts.append(p.replace(clean_word, masked_p))
+        return " ".join(masked_parts)
+
+    elif pii_type == "ADDRESS":
+        # Keep first 5 and last 5 characters
+        if len(text) <= 10:
+            return "***"
+        return f"{text[:5]}***{text[-5:]}"
         
     return "***"
 
@@ -78,7 +102,7 @@ def main():
 
     print(f"Extraction successful. Total text blocks: {len(extracted.blocks)}")
     
-    # Initialize all detectors
+    # Initialize all detectors (Structured and NLP)
     detectors = [
         EmailDetector(),
         PhoneDetector(),
@@ -86,6 +110,7 @@ def main():
         SSNDetector(),
         CreditCardDetector(),
         DateOfBirthDetector(),
+        NLPDetector(),
     ]
 
     all_matches: List[PIIMatch] = []
@@ -108,17 +133,27 @@ def main():
     # Aggregate counts by PII type
     counts = Counter(m.pii_type for m in all_matches)
     
+    structured_types = ["EMAIL", "PHONE", "IP_ADDRESS", "SSN", "CREDIT_CARD", "DATE_OF_BIRTH"]
+    nlp_types = ["PERSON", "COMPANY", "ADDRESS"]
+
     print("\n=== STRUCTURED PII DETECTION COUNTS ===")
-    for pii_type in ["EMAIL", "PHONE", "IP_ADDRESS", "SSN", "CREDIT_CARD", "DATE_OF_BIRTH"]:
-        print(f"{pii_type}: {counts[pii_type]}")
+    for pii_type in structured_types:
+        print(f"  {pii_type}: {counts[pii_type]}")
+
+    print("\n=== NLP PII DETECTION COUNTS ===")
+    for pii_type in nlp_types:
+        print(f"  {pii_type}: {counts[pii_type]}")
 
     print("\n=== MASKED DETECTION EXAMPLES ===")
     # Group examples by type to show a few sample masks
-    grouped_examples = {t: [] for t in ["EMAIL", "PHONE", "IP_ADDRESS", "SSN", "CREDIT_CARD", "DATE_OF_BIRTH"]}
+    grouped_examples = {t: [] for t in structured_types + nlp_types}
     for m in all_matches:
         grouped_examples[m.pii_type].append(m)
 
-    for pii_type, matches in grouped_examples.items():
+    import re  # needed for regex formatting in mask helper
+
+    for pii_type in (structured_types + nlp_types):
+        matches = grouped_examples[pii_type]
         print(f"\nCategory: {pii_type} (First 5 examples):")
         if not matches:
             print("  No examples detected.")

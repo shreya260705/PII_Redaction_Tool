@@ -6,9 +6,12 @@ from src.models import PIIMatch
 # Explicit detector priority for semantically stronger matches when resolving overlaps.
 # Higher number represents higher priority.
 PII_TYPE_PRIORITY = {
-    "CREDIT_CARD": 6,
-    "SSN": 5,
-    "EMAIL": 4,
+    "CREDIT_CARD": 9,
+    "SSN": 8,
+    "EMAIL": 7,
+    "COMPANY": 6,
+    "PERSON": 5,
+    "ADDRESS": 4,
     "PHONE": 3,
     "IP_ADDRESS": 2,
     "DATE_OF_BIRTH": 1,
