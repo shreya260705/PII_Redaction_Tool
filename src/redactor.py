@@ -171,22 +171,29 @@ class RedactionMapper:
         if cache_key in self.validation_cache:
             return self.validation_cache[cache_key]
 
-        for detector_type, detector in self.validators:
-            if detector_type == target_type:
+        # Use a list of unique detectors to avoid redundant evaluations
+        seen_detectors = set()
+        for _, detector in self.validators:
+            if detector in seen_detectors:
                 continue
+            seen_detectors.add(detector)
 
             try:
+                # Save state of stateful DateOfBirthDetector to prevent contamination
+                state = None
+                if hasattr(detector, "dob_context_active"):
+                    state = (detector.dob_context_active, detector.blocks_since_dob_context)
+
                 matches = detector.detect(replacement)
 
-                type_matches = [
-                    m for m in matches
-                    if m.pii_type == detector_type
-                ]
+                # Restore state
+                if state is not None:
+                    detector.dob_context_active, detector.blocks_since_dob_context = state
 
-                if type_matches:
-                    self.validation_cache[cache_key] = False
-                    return False
-
+                for m in matches:
+                    if m.pii_type != target_type:
+                        self.validation_cache[cache_key] = False
+                        return False
             except Exception:
                 continue
 
