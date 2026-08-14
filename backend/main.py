@@ -132,32 +132,23 @@ def redact_document(
         )
 
     # 2. Enforce file size limit
-    contents = file.file.read(1024)
-    size = len(contents)
-    rest = []
-    while True:
-        chunk = file.file.read(8192)
-        if not chunk:
-            break
-        size += len(chunk)
-        if size > MAX_UPLOAD_SIZE:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"File too large. Maximum allowed size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB."
-            )
-        rest.append(chunk)
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    if file_size > MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Maximum allowed size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB."
+        )
 
-    all_contents = contents + b"".join(rest)
-
-    # Create safe unique temporary file names in our dedicated temp folder
+    # Save uploaded file safely
     unique_id = uuid.uuid4().hex
     input_path = os.path.join(TEMP_BASE_DIR, f"in_{unique_id}.docx")
     output_path = os.path.join(TEMP_BASE_DIR, f"out_{unique_id}.docx")
 
-    # Save uploaded file
     try:
-        with open(input_path, "wb") as f:
-            f.write(all_contents)
+        with open(input_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -384,32 +375,23 @@ def redact_document_async(
         )
 
     # 2. Enforce file size limit
-    contents = file.file.read(1024)
-    size = len(contents)
-    rest = []
-    while True:
-        chunk = file.file.read(8192)
-        if not chunk:
-            break
-        size += len(chunk)
-        if size > MAX_UPLOAD_SIZE:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"File too large. Maximum allowed size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB."
-            )
-        rest.append(chunk)
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+    if file_size > MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File too large. Maximum allowed size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB."
+        )
 
-    all_contents = contents + b"".join(rest)
-
-    # Create safe unique temporary file names
+    # Save uploaded file safely
     unique_id = uuid.uuid4().hex
     input_path = os.path.join(TEMP_BASE_DIR, f"in_{unique_id}.docx")
     output_path = os.path.join(TEMP_BASE_DIR, f"out_{unique_id}.docx")
 
-    # Save uploaded file
     try:
-        with open(input_path, "wb") as f:
-            f.write(all_contents)
+        with open(input_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
