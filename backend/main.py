@@ -84,6 +84,42 @@ def prune_expired_files(max_age_seconds: int = 1800):
 async def health():
     return {"status": "ok"}
 
+@app.get("/api/debug")
+async def debug():
+    import os
+    import sys
+    
+    # Read memory info on Linux
+    mem_info = {}
+    try:
+        if os.path.exists("/proc/self/status"):
+            with open("/proc/self/status", "r") as f:
+                for line in f:
+                    if line.startswith("Vm"):
+                        parts = line.strip().split(":")
+                        if len(parts) == 2:
+                            mem_info[parts[0].strip()] = parts[1].strip()
+    except Exception as e:
+        mem_info["error"] = str(e)
+
+    # Get active process info
+    cmd_line = []
+    try:
+        if os.path.exists("/proc/self/cmdline"):
+            with open("/proc/self/cmdline", "r") as f:
+                cmd_line = f.read().split("\x00")
+    except Exception:
+        pass
+
+    return {
+        "pid": os.getpid(),
+        "ppid": os.getppid(),
+        "argv": sys.argv,
+        "cmd_line": cmd_line,
+        "mem_info": mem_info,
+        "env": {k: v for k, v in os.environ.items() if "KEY" not in k.upper() and "SECRET" not in k.upper() and "PASSWORD" not in k.upper() and "TOKEN" not in k.upper()}
+    }
+
 @app.post("/api/redact")
 def redact_document(
     file: UploadFile = File(...),
