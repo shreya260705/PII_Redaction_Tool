@@ -606,11 +606,19 @@ class RedactionEngine:
         processed_elements = set()
 
         import gc
+        import platform
         # Iterate through block structures
         for block in extracted.blocks:
             # Periodically force garbage collection to keep memory footprint low
             if block.block_id > 0 and block.block_id % 500 == 0:
                 gc.collect()
+                if platform.system() == "Linux":
+                    try:
+                        import ctypes
+                        libc = ctypes.CDLL("libc.so.6")
+                        libc.malloc_trim(0)
+                    except Exception:
+                        pass
 
             # Skip empty or whitespace-only blocks
             if not block.text or not block.text.strip():

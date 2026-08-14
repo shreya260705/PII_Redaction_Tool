@@ -300,6 +300,17 @@ def run_redaction_task(task_id: str, input_path: str, output_path: str, filename
                 os.remove(input_path)
         except Exception:
             pass
+        # Trim memory back to the OS
+        import gc
+        import platform
+        gc.collect()
+        if platform.system() == "Linux":
+            try:
+                import ctypes
+                libc = ctypes.CDLL("libc.so.6")
+                libc.malloc_trim(0)
+            except Exception:
+                pass
 
 @app.post("/api/redact-async")
 def redact_document_async(
