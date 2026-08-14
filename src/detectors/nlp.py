@@ -66,7 +66,7 @@ class NLPDetector(BaseDetector):
             # Remove unused spaCy pipeline components to optimize speed
             nlp_model = nlp_engine.nlp.get("en")
             if nlp_model:
-                for pipe in ["attribute_ruler", "lemmatizer"]:
+                for pipe in ["tagger", "parser", "attribute_ruler", "lemmatizer"]:
                     if pipe in nlp_model.pipe_names:
                         nlp_model.remove_pipe(pipe)
 
