@@ -419,8 +419,10 @@ def redact_document_async(
     task_id = str(uuid.uuid4())
     save_task(task_id, {"status": "processing"})
     
-    # Run the redaction in the background task
-    background_tasks.add_task(run_redaction_task, task_id, input_path, output_path, filename)
+    # Run the redaction in a separate daemon thread to keep Uvicorn event loop responsive
+    import threading
+    t = threading.Thread(target=run_redaction_task, args=(task_id, input_path, output_path, filename), daemon=True)
+    t.start()
     
     return {"task_id": task_id}
 
