@@ -71,6 +71,9 @@ def prune_expired_files(max_age_seconds: int = 1800):
                         pass
     except Exception:
         pass
+@app.get("/")
+async def mainPage():
+    return "Welcome to the first page of the PII Redaction Engine API"
 
 @app.get("/api/health")
 async def health():
