@@ -176,11 +176,9 @@ def redact_document(
     try:
         result = engine.redact(input_path, output_path)
     except Exception as e:
-        import traceback
-        err_msg = f"Exception: {str(e)}\nTraceback: {traceback.format_exc()}"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=err_msg
+            detail="An error occurred while redacting the document."
         )
 
     if not os.path.exists(output_path):
