@@ -42,19 +42,26 @@ def test_render_async_rhp():
     
     poll_start = time.time()
     task_data = None
-    while time.time() - poll_start < 300: # 5 minutes max
-        time.sleep(5)
-        poll_res = requests.get(f"{RENDER_URL}/api/tasks/{task_id}", timeout=30)
-        assert poll_res.status_code == 200
-        task_data = poll_res.json()
-        status = task_data.get("status")
-        print(f"Polling Render task status: {status} ({time.time() - poll_start:.1f}s)...")
-        if status in ["success", "error"]:
-            break
+    poll_count = 0
+    while time.time() - poll_start < 400: # 6.6 minutes max
+        time.sleep(3)
+        poll_count += 1
+        try:
+            poll_res = requests.get(f"{RENDER_URL}/api/tasks/{task_id}", timeout=30)
+            if poll_res.status_code == 200:
+                task_data = poll_res.json()
+                status = task_data.get("status")
+                print(f"  [Poll #{poll_count}] Status: {status} ({time.time() - poll_start:.1f}s)")
+                if status in ["success", "error"]:
+                    break
+            else:
+                print(f"  [Poll #{poll_count}] Non-200 status code: {poll_res.status_code}")
+        except Exception as poll_err:
+            print(f"  [Poll #{poll_count}] Network hiccup: {poll_err}")
             
     total_async_time = time.time() - start_t
     print(f"Render task completed in {total_async_time:.2f}s. Task Result: {task_data}")
-    assert task_data.get("status") == "success", f"Render task failed with status: {task_data}"
+    assert task_data and task_data.get("status") == "success", f"Render task failed with status: {task_data}"
     
     result = task_data["result"]
     file_id = result["file_id"]

@@ -1,3 +1,26 @@
+Bilkul. ❤️ Main tumhe **poora ready-to-paste `README.md`** de raha hoon, existing README ki achhi technical structure ko preserve karke, but updated with:
+
+* Vercel deployed frontend
+* Render deployed backend
+* Docker
+* Async processing
+* Large DOCX handling
+* API endpoints
+* Testing
+* **57/57 = 100% Precision/Recall only for the controlled synthetic 57-PII test**
+* **RHP ke liye NO false claim of 100% accuracy/precision/recall**
+* Clear statement that **RHP ka exact ground-truth PII count unknown hai**
+* RHP replacement count ko accuracy metric na maan-ne ki explanation
+* Production/deployment limitation honestly documented
+
+For the deployed links, the current URLs you gave me are:
+
+**Frontend:** [PII Shield — Vercel Frontend](https://pii-redaction-tool-c777.vercel.app?utm_source=chatgpt.com)
+**Backend:** [PII Shield — Render Backend](https://pii-redaction-tool-fbh6.onrender.com?utm_source=chatgpt.com)
+
+Below is the complete README.
+
+````markdown
 # PII Shield — PII Redaction Tool
 
 A full-stack document security application that automatically detects and
@@ -10,7 +33,31 @@ securely downloading the generated redacted document.
 
 ---
 
-## 1. Problem Statement
+## Live Deployment
+
+### Frontend
+
+PII Shield is deployed as a React/Vite application on Vercel.
+
+**Frontend:**  
+https://pii-redaction-tool-c777.vercel.app
+
+### Backend
+
+The FastAPI redaction backend is deployed on Render.
+
+**Backend:**  
+https://pii-redaction-tool-fbh6.onrender.com
+
+### API Documentation
+
+The FastAPI backend provides Swagger/OpenAPI documentation at:
+
+https://pii-redaction-tool-fbh6.onrender.com/docs
+
+---
+
+# 1. Problem Statement
 
 Documents such as legal documents, prospectuses, HR records, and support
 logs can contain sensitive personally identifiable information.
@@ -20,9 +67,12 @@ error-prone. The objective of this project is to automate the process by
 detecting common PII categories and replacing them with safe synthetic
 values while preserving the document structure and usability.
 
+The system is designed to process DOCX documents containing both structured
+PII and natural-language PII.
+
 ---
 
-## 2. Key Features
+# 2. Key Features
 
 - Automatic PII detection in DOCX documents
 - Detection of names, emails, phone numbers, companies, addresses,
@@ -36,6 +86,8 @@ values while preserving the document structure and usability.
 - FastAPI REST backend
 - React-based web frontend
 - DOCX file upload and redaction
+- Asynchronous processing for longer-running document redaction
+- Frontend polling for asynchronous task status
 - Redaction statistics returned to the frontend
 - Temporary download links
 - Two-minute download expiry
@@ -43,106 +95,156 @@ values while preserving the document structure and usability.
 - Live frontend countdown for file expiration
 - Automated regression and accuracy testing
 - Strict synthetic evaluation fixture
+- Docker support
 - Swagger/OpenAPI API documentation
+- Vercel frontend deployment
+- Render backend deployment
 
 ---
 
-## 3. System Architecture
+# 3. System Architecture
 
-The application is divided into three main layers:
+The application consists of the following major components:
 
-    ┌─────────────────────┐
-    │   React Frontend    │
-    │     PII Shield      │
-    └──────────┬──────────┘
-               │ HTTP
-               ▼
-    ┌─────────────────────┐
-    │   FastAPI Backend    │
-    │  Upload / Download   │
-    │  Expiry Management   │
-    └──────────┬──────────┘
-               │
-               ▼
-    ┌─────────────────────┐
-    │  Redaction Engine    │
-    │ Detection + Mapping  │
-    └──────────┬──────────┘
-               │
-               ▼
-    ┌─────────────────────┐
-    │    Redacted DOCX    │
-    └─────────────────────┘
-
-### Processing Flow
-
-    DOCX Upload
-        ↓
-    Document Extraction
-        ↓
-    PII Detection
-        ↓
-    Entity Resolution / Validation
-        ↓
-    Deterministic Replacement Mapping
-        ↓
-    DOCX Redaction
-        ↓
-    Redacted DOCX
-        ↓
-    Temporary File Storage
-        ↓
-    Download with Expiry
+```text
+                    User
+                      │
+                      ▼
+          ┌──────────────────────┐
+          │   React Frontend     │
+          │       Vercel         │
+          └──────────┬───────────┘
+                     │
+                     │ HTTPS
+                     ▼
+          ┌──────────────────────┐
+          │   FastAPI Backend    │
+          │       Render         │
+          └──────────┬───────────┘
+                     │
+                     ▼
+          ┌──────────────────────┐
+          │ Async Redaction Task │
+          └──────────┬───────────┘
+                     │
+                     ▼
+          ┌──────────────────────┐
+          │   Redaction Engine   │
+          │ Detection + Mapping  │
+          └──────────┬───────────┘
+                     │
+                     ▼
+          ┌──────────────────────┐
+          │    Redacted DOCX     │
+          └──────────┬───────────┘
+                     │
+                     ▼
+          ┌──────────────────────┐
+          │ Temporary File Store │
+          └──────────┬───────────┘
+                     │
+                     ▼
+          ┌──────────────────────┐
+          │ Frontend Download    │
+          └──────────────────────┘
+````
 
 ---
 
-## 4. Detection Approach
+## Processing Flow
+
+For asynchronous processing:
+
+```text
+DOCX Upload
+     ↓
+POST /api/redact-async
+     ↓
+Task ID returned
+     ↓
+Background Redaction Task
+     ↓
+Document Extraction
+     ↓
+PII Detection
+     ↓
+Entity Resolution / Validation
+     ↓
+Deterministic Replacement Mapping
+     ↓
+DOCX Redaction
+     ↓
+Task Status = success
+     ↓
+Redacted DOCX
+     ↓
+Temporary File Storage
+     ↓
+Frontend Download
+```
+
+The frontend polls the backend for task status rather than keeping one
+long-running HTTP request open for the entire redaction process.
+
+This is particularly useful for larger DOCX documents that require more
+processing time.
+
+---
+
+# 4. Detection Approach
 
 The redaction engine uses a combination of structured pattern detection,
 NLP and contextual rules rather than relying on a single detection
 technique.
 
-### Regex / Structured Detection
+## Regex / Structured Detection
 
 Regular expressions are used for PII with predictable formats:
 
-- Email addresses
-- Phone numbers
-- IP addresses
-- SSNs
-- Credit card numbers
-- Dates
+* Email addresses
+* Phone numbers
+* IP addresses
+* SSNs
+* Credit card numbers
+* Dates
 
 Credit card detection also supports commonly formatted 16-digit values
 using grouped spaces or hyphens.
 
-### NLP-Based Detection
+---
+
+## NLP-Based Detection
 
 spaCy NLP is used for natural-language entities where regex alone is
 not sufficient, particularly:
 
-- PERSON
-- COMPANY / organization-related entities
-- Address-related entities
+* PERSON
+* COMPANY / organization-related entities
+* Address-related entities
 
 Additional candidate matching is used for person names where required.
 
-### Context-Aware Detection
+---
+
+## Context-Aware Detection
 
 Some values are ambiguous when considered without context.
 
-For example, a date such as:
+For example:
 
-    15/04/1995
+```text
+15/04/1995
+```
 
 could simply be a document date rather than a person's date of birth.
 
 The Date of Birth detector therefore uses contextual information such as
-DOB/date-of-birth headers before treating a date as a DATE_OF_BIRTH entity.
+DOB/date-of-birth headers before treating a date as a
+DATE_OF_BIRTH entity.
 
 ---
 
-## 5. Entity Validation and Conflict Handling
+# 5. Entity Validation and Conflict Handling
 
 Multiple detectors can sometimes identify overlapping text.
 
@@ -161,7 +263,7 @@ redaction.
 
 ---
 
-## 6. Deterministic Redaction
+# 6. Deterministic Redaction
 
 The system does not simply delete PII.
 
@@ -173,29 +275,35 @@ throughout the document.
 
 For example:
 
-    Rohan Sharma
-        ↓
-    Synthetic Person Name
+```text
+Rohan Sharma
+      ↓
+Synthetic Person Name
+```
 
-    rohan.sharma@example.com
-        ↓
-    Synthetic Email
+```text
+rohan.sharma@example.com
+      ↓
+Synthetic Email
+```
 
-    +91 9876543210
-        ↓
-    Synthetic Phone Number
+```text
++91 9876543210
+      ↓
+Synthetic Phone Number
+```
 
 This makes the redacted document easier to read while preventing the
 original sensitive value from remaining in the output.
 
 ---
 
-## 7. DOCX Processing
+# 7. DOCX Processing
 
 The project uses `python-docx` for reading and writing DOCX files.
 
-The document is processed block-by-block, including document
-paragraphs and table content.
+The document is processed block-by-block, including document paragraphs
+and table content.
 
 The implementation takes into account that DOCX text can be divided
 across multiple runs because of formatting such as bold, italic,
@@ -207,21 +315,21 @@ as possible.
 
 ---
 
-## 8. Supported PII Categories
+# 8. Supported PII Categories
 
 The current implementation supports:
 
-| Category | Detection Method |
-|----------|------------------|
-| PERSON | NLP + name candidate rules |
-| EMAIL | Regex |
-| PHONE | Regex |
-| COMPANY | NLP + contextual detection |
-| ADDRESS | Context / NLP-based detection |
-| SSN | Regex |
-| CREDIT_CARD | Regex + format validation |
-| DATE_OF_BIRTH | Context-aware date detection |
-| IP_ADDRESS | Regex |
+| Category      | Detection Method              |
+| ------------- | ----------------------------- |
+| PERSON        | NLP + name candidate rules    |
+| EMAIL         | Regex                         |
+| PHONE         | Regex                         |
+| COMPANY       | NLP + contextual detection    |
+| ADDRESS       | Context / NLP-based detection |
+| SSN           | Regex                         |
+| CREDIT_CARD   | Regex + format validation     |
+| DATE_OF_BIRTH | Context-aware date detection  |
+| IP_ADDRESS    | Regex                         |
 
 ---
 
@@ -229,39 +337,96 @@ The current implementation supports:
 
 The Python redaction engine is exposed through a FastAPI REST API.
 
-### Health Check
+## Health Check
 
-    GET /api/health
+```http
+GET /api/health
+```
 
 Used to verify that the backend is running.
 
-### Redact Document
+---
 
-    POST /api/redact
+## Synchronous Redaction
+
+```http
+POST /api/redact
+```
 
 Accepts a DOCX document, runs the redaction engine, and returns
 information about the generated redacted file.
 
 The response includes:
 
-- File identifier
-- Redaction counts
-- Download information
-- Expiration timestamp
+* File identifier
+* Redaction counts
+* Download information
+* Expiration timestamp
 
-### Download Redacted File
+---
 
-    GET /api/download/{file_id}
+## Asynchronous Redaction
 
-Downloads the generated redacted document while it is still within its
-valid download period.
+```http
+POST /api/redact-async
+```
 
-### API Documentation
+Creates a background redaction task for the uploaded document.
 
-When running locally, FastAPI automatically provides Swagger/OpenAPI
-documentation at:
+The endpoint returns a task identifier that can be used to monitor
+processing.
 
-    http://127.0.0.1:8000/docs
+Example flow:
+
+```text
+POST /api/redact-async
+        ↓
+task_id
+        ↓
+GET /api/tasks/{task_id}
+```
+
+---
+
+## Task Status
+
+```http
+GET /api/tasks/{task_id}
+```
+
+Used by the frontend to monitor asynchronous document processing.
+
+The frontend periodically polls this endpoint until the task reaches
+a completed or failed state.
+
+---
+
+## Download Redacted File
+
+```http
+GET /api/download/{file_id}
+```
+
+Downloads the generated redacted document while it is still within
+its valid download period.
+
+---
+
+## API Documentation
+
+FastAPI automatically provides Swagger/OpenAPI documentation.
+
+Local:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Production:
+
+```text
+https://pii-redaction-tool-fbh6.onrender.com/docs
+```
 
 ---
 
@@ -276,16 +441,16 @@ The backend returns an `expires_at` timestamp to the frontend.
 
 During this period:
 
-- The user can download the document multiple times.
-- Downloading the file does not reset the expiry timer.
-- The frontend displays a live countdown.
+* The user can download the document multiple times.
+* Downloading the file does not reset the expiry timer.
+* The frontend displays a live countdown.
 
 After the expiration time:
 
-- The backend rejects the download request.
-- The temporary file is cleaned up.
-- The frontend disables the download button.
-- The user is shown that the file is no longer available.
+* The backend rejects the download request.
+* The temporary file is cleaned up.
+* The frontend disables the download button.
+* The user is shown that the file is no longer available.
 
 This provides a simple mechanism to reduce the lifetime of generated
 sensitive documents.
@@ -299,16 +464,17 @@ interface rather than a generic AI interface.
 
 The frontend provides:
 
-- DOCX drag-and-drop upload
-- File selection and removal
-- Upload / processing state
-- Redaction result summary
-- Number of detected/redacted PII items
-- Download button
-- Download expiry countdown
-- Expired-file state
-- Error handling
-- Responsive layout
+* DOCX drag-and-drop upload
+* File selection and removal
+* Upload / processing state
+* Asynchronous processing status
+* Redaction result summary
+* Number of detected/redacted PII items
+* Download button
+* Download expiry countdown
+* Expired-file state
+* Error handling
+* Responsive layout
 
 The UI uses a clean security-oriented visual design with a neutral
 background, dark typography, restrained accent colors, structured
@@ -323,26 +489,26 @@ known ground-truth PII values.
 
 The fixture contains:
 
-| PII Type | Expected |
-|----------|---------:|
-| PERSON | 7 |
-| EMAIL | 8 |
-| PHONE | 6 |
-| IP_ADDRESS | 6 |
-| SSN | 6 |
-| CREDIT_CARD | 6 |
-| DATE_OF_BIRTH | 6 |
-| COMPANY | 6 |
-| ADDRESS | 6 |
-| **TOTAL** | **57** |
+| PII Type      | Expected |
+| ------------- | -------: |
+| PERSON        |        7 |
+| EMAIL         |        8 |
+| PHONE         |        6 |
+| IP_ADDRESS    |        6 |
+| SSN           |        6 |
+| CREDIT_CARD   |        6 |
+| DATE_OF_BIRTH |        6 |
+| COMPANY       |        6 |
+| ADDRESS       |        6 |
+| **TOTAL**     |   **57** |
 
 The evaluation verifies two separate properties:
 
-### Detection Accuracy
+## Detection Accuracy
 
 Whether all expected PII values were detected.
 
-### Redaction Accuracy
+## Redaction Accuracy
 
 Whether the detected PII was actually removed/replaced in the generated
 DOCX.
@@ -353,239 +519,534 @@ output document.
 
 ---
 
-# 13. Evaluation Results
+# 13. Controlled Evaluation Results
 
-The strict accuracy test produced:
+The strict synthetic accuracy test produced:
 
-    PERSON        7/7
-    EMAIL         8/8
-    PHONE         6/6
-    IP_ADDRESS    6/6
-    SSN           6/6
-    CREDIT_CARD   6/6
-    DATE_OF_BIRTH 6/6
-    COMPANY       6/6
-    ADDRESS       6/6
-    -------------------
-    TOTAL         57/57
+```text
+PERSON        7/7
+EMAIL         8/8
+PHONE         6/6
+IP_ADDRESS    6/6
+SSN           6/6
+CREDIT_CARD   6/6
+DATE_OF_BIRTH 6/6
+COMPANY       6/6
+ADDRESS       6/6
+-------------------
+TOTAL         57/57
+```
 
 The generated DOCX was additionally checked to ensure that the original
 PII values were no longer present.
 
-    Detected PII:              57/57
-    Successfully redacted:    57/57
-    Original PII remaining:    0
+```text
+Detected PII:             57/57
+Successfully redacted:   57/57
+Original PII remaining:    0
+```
 
-### Metrics
+### Controlled Benchmark Metrics
 
-    True Positives (TP):   57
-    False Positives (FP):   0
-    False Negatives (FN):   0
+For this synthetic evaluation fixture:
 
-    Precision = TP / (TP + FP)
-              = 57 / 57
-              = 100%
+```text
+True Positives (TP):   57
+False Positives (FP):   0
+False Negatives (FN):   0
+```
 
-    Recall = TP / (TP + FN)
-           = 57 / 57
-           = 100%
+Therefore:
 
-    F1 Score = 100%
+```text
+Precision = TP / (TP + FP)
+          = 57 / 57
+          = 100%
+```
 
-These metrics are based on the controlled synthetic fixture and should
-not be interpreted as universal performance guarantees for arbitrary
-real-world documents.
+```text
+Recall = TP / (TP + FN)
+       = 57 / 57
+       = 100%
+```
+
+```text
+F1 Score = 100%
+```
+
+### Important Interpretation
+
+These 100% Precision, Recall and F1 values apply **only to the controlled
+synthetic 57-PII evaluation fixture with known ground truth**.
+
+They should NOT be interpreted as a universal 100% accuracy guarantee for
+arbitrary real-world documents.
 
 ---
 
-# 14. Automated Testing
+# 14. Red Herring Prospectus Evaluation
+
+A large Red Herring Prospectus DOCX was also used for large-document
+processing and performance validation.
+
+The document is approximately:
+
+```text
+1.76 MB
+```
+
+The system is able to process large DOCX documents and report the number
+of replacements performed by the redaction engine.
+
+However, the Red Herring Prospectus does **not** have a complete,
+manually annotated ground-truth PII dataset.
+
+Therefore, the number of replacements reported by the engine for the
+Red Herring Prospectus cannot by itself be interpreted as:
+
+* Accuracy
+* Precision
+* Recall
+* F1 score
+
+For example, if the engine reports a certain number of replacements,
+that does not prove that every replacement is correct or that every PII
+value in the document was detected.
+
+A formal Precision/Recall evaluation for the Red Herring Prospectus
+would require a manually annotated ground-truth dataset containing the
+complete set of PII values.
+
+Therefore:
+
+```text
+Synthetic Evaluation:
+Precision = 100%
+Recall    = 100%
+F1        = 100%
+
+Red Herring Prospectus:
+Exact PII ground truth = Not available
+Formal Precision       = Not calculated
+Formal Recall          = Not calculated
+Formal F1              = Not calculated
+```
+
+This distinction is intentional and prevents the project from making
+unsupported accuracy claims about a real-world document.
+
+---
+
+# 15. Automated Testing
 
 The project contains unit, integration and redaction verification tests.
 
-The complete test suite currently passes:
+Run the complete test suite using:
 
-    70 passed
+```bash
+python -m pytest -q
+```
 
 The strict accuracy test independently verifies:
 
-- Expected detection counts
-- All supported PII categories
-- Actual replacement in the output DOCX
-- Absence of original PII values after redaction
+* Expected detection counts
+* All supported PII categories
+* Actual replacement in the output DOCX
+* Absence of original PII values after redaction
+
+Run the strict accuracy test using:
+
+```bash
+python -m pytest tests/test_redactor.py -k test_strict_accuracy_verification
+```
+
+The controlled test fixture contains 57 known PII values.
 
 ---
 
-# 15. Tradeoffs and Known Limitations
+# 16. Large Document Processing
 
-### Regex Detection
+Large DOCX files require substantially more processing and memory than
+small test documents.
 
-Regex provides strong precision for structured formats such as emails,
-phone numbers and IP addresses, but unusual formatting may cause
-false negatives.
+The application therefore includes optimizations for longer-running
+redaction workloads, including asynchronous task processing and frontend
+polling.
 
-### NLP Detection
+The backend can process the document in the background while the
+frontend periodically checks the task status.
 
-NLP improves detection of names, companies and addresses but natural
-language is ambiguous and can produce false positives.
+This avoids relying entirely on one long-lived synchronous browser
+request.
 
-### Date Detection
+The application also includes memory-management measures in the
+redaction workflow where supported by the deployment environment.
 
-Dates are inherently ambiguous. The implementation uses contextual
-detection so that ordinary dates are not automatically classified as
-dates of birth.
-
-### DOCX Images
-
-The current implementation primarily processes textual DOCX content.
-PII contained inside scanned images or image-only documents is not
-currently OCR-redacted.
-
-### Ground Truth
-
-The synthetic benchmark has explicit ground truth. The real Red Herring
-Prospectus does not have complete manually annotated ground truth, so
-formal precision/recall for that document cannot be claimed without
-additional annotation.
+These optimizations improve handling of large documents but do not imply
+unlimited file size or unlimited infrastructure capacity.
 
 ---
 
-# 16. Project Structure
+# 17. Docker
 
-    PII-Redaction-Tool/
-    │
-    ├── src/
-    │   ├── detectors/
-    │   │   ├── structured.py
-    │   │   └── nlp.py
-    │   └── redactor.py
-    │
-    ├── backend/
-    │   └── main.py
-    │
-    ├── frontend/
-    │   ├── src/
-    │   │   ├── App.jsx
-    │   │   ├── App.css
-    │   │   └── index.css
-    │   ├── package.json
-    │   └── vite.config.js
-    │
-    ├── tests/
-    │
-    ├── evaluation/
-    │
-    ├── output/
-    │
-    ├── PII_Strict_Accuracy_Test.docx
-    ├── Red Herring Prospectus.docx
-    ├── requirements.txt
-    └── README.md
+The project includes a `Dockerfile` for containerized execution.
+
+## Build the Docker Image
+
+From the project root:
+
+```bash
+docker build -t pii-redaction-tool .
+```
+
+## Run the Container
+
+Use the port and startup command defined by the current Dockerfile.
+
+For the standard FastAPI configuration:
+
+```bash
+docker run -p 8000:8000 pii-redaction-tool
+```
+
+The API can then be accessed at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Swagger:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Docker provides a consistent environment for running the backend and
+its Python dependencies.
 
 ---
 
-# 17. Local Setup
+# 18. Deployment
 
-### Backend
+The project uses a separated frontend/backend deployment architecture.
+
+## Frontend — Vercel
+
+The React/Vite frontend is deployed on Vercel.
+
+```text
+https://pii-redaction-tool-c777.vercel.app
+```
+
+## Backend — Render
+
+The FastAPI backend is deployed on Render.
+
+```text
+https://pii-redaction-tool-fbh6.onrender.com
+```
+
+The frontend communicates with the deployed backend over HTTPS.
+
+The production architecture is:
+
+```text
+Browser
+   │
+   ▼
+Vercel
+React Frontend
+   │
+   │ HTTPS API Requests
+   ▼
+Render
+FastAPI Backend
+   │
+   ▼
+Python Redaction Engine
+```
+
+---
+
+# 19. Local Setup
+
+## Backend
 
 Install Python dependencies:
 
-    pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
+```
 
 Run the FastAPI server:
 
-    uvicorn backend.main:app --reload
+```bash
+uvicorn backend.main:app --reload
+```
 
 The API will be available at:
 
-    http://127.0.0.1:8000
+```text
+http://127.0.0.1:8000
+```
 
 Swagger documentation:
 
-    http://127.0.0.1:8000/docs
+```text
+http://127.0.0.1:8000/docs
+```
 
-### Frontend
+---
+
+## Frontend
 
 Open another terminal:
 
-    cd frontend
-    npm install
-    npm run dev
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 The frontend will then be available through the Vite development
 server.
 
 ---
 
-# 18. CLI Usage
+# 20. CLI Usage
 
 The redaction engine can also be used directly without the web
 application:
 
-    python -m src.redactor \
-        --input "input.docx" \
-        --output "output.docx"
+```bash
+python -m src.redactor \
+    --input "input.docx" \
+    --output "output.docx"
+```
 
 Example:
 
-    python -m src.redactor \
-        --input "Red Herring Prospectus.docx" \
-        --output "output/redacted.docx"
+```bash
+python -m src.redactor \
+    --input "Red Herring Prospectus.docx" \
+    --output "output/redacted.docx"
+```
 
 ---
 
-# 19. Running Tests
+# 21. Project Structure
 
-From the project root:
+```text
+PII-Redaction-Tool/
+│
+├── src/
+│   ├── detectors/
+│   │   ├── structured.py
+│   │   └── nlp.py
+│   └── redactor.py
+│
+├── backend/
+│   └── main.py
+│
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   └── index.css
+│   ├── package.json
+│   └── vite.config.js
+│
+├── tests/
+│
+├── evaluation/
+│
+├── scratch/
+│
+├── output/
+│
+├── PII_Strict_Accuracy_Test.docx
+├── Red Herring Prospectus.docx
+├── requirements.txt
+├── Dockerfile
+├── .dockerignore
+└── README.md
+```
 
-    python -m pytest -q
-
-Expected current result:
-
-    70 passed
-
-To run only the strict accuracy verification:
-
-    python -m pytest tests/test_redactor.py \
-        -k test_strict_accuracy_verification
-
----
-
-# 20. Technology Stack
-
-### Backend
-
-- Python
-- FastAPI
-- Uvicorn
-- python-docx
-- spaCy
-- Pytest
-
-### Frontend
-
-- React
-- Vite
-- JavaScript
-- CSS
-
-### Document Processing
-
-- DOCX parsing and generation
-- Regex-based structured detection
-- NLP / Named Entity Recognition
-- Context-aware entity detection
-- Deterministic replacement mapping
+Temporary scratch scripts are used during development and debugging and
+are not part of the production redaction pipeline.
 
 ---
 
-# 21. Future Improvements
+# 22. Technology Stack
+
+## Backend
+
+* Python
+* FastAPI
+* Uvicorn
+* python-docx
+* spaCy
+* Presidio
+* Pytest
+
+## Frontend
+
+* React
+* Vite
+* JavaScript
+* CSS
+
+## Document Processing
+
+* DOCX parsing and generation
+* Regex-based structured detection
+* NLP / Named Entity Recognition
+* Context-aware entity detection
+* Deterministic replacement mapping
+
+## Deployment / Infrastructure
+
+* Docker
+* Vercel
+* Render
+
+---
+
+# 23. Tradeoffs and Known Limitations
+
+## Regex Detection
+
+Regex provides strong precision for structured formats such as emails,
+phone numbers and IP addresses, but unusual formatting may cause
+false negatives.
+
+## NLP Detection
+
+NLP improves detection of names, companies and addresses but natural
+language is ambiguous and can produce false positives.
+
+## Date Detection
+
+Dates are inherently ambiguous. The implementation uses contextual
+detection so that ordinary dates are not automatically classified as
+dates of birth.
+
+## DOCX Images
+
+The current implementation primarily processes textual DOCX content.
+PII contained inside scanned images or image-only documents is not
+currently OCR-redacted.
+
+## Large Documents
+
+Large documents require more CPU time and memory than small documents.
+Processing time and infrastructure behavior therefore depend on the
+deployment environment and available resources.
+
+## Ground Truth
+
+The synthetic benchmark has explicit ground truth.
+
+The Red Herring Prospectus does not have complete manually annotated
+ground truth. Therefore formal Precision, Recall and F1 metrics cannot
+be calculated for that document without additional annotation.
+
+## Real-World Accuracy
+
+The controlled benchmark demonstrates the behavior of the detector on
+the included synthetic evaluation fixture. It does not establish a
+universal 100% detection rate for arbitrary real-world documents.
+
+---
+
+# 24. Security Considerations
+
+The application is designed to minimize the lifetime of generated
+redacted documents.
+
+Generated output files are temporary and have a limited download window.
+
+The redaction process replaces detected sensitive values with synthetic
+alternatives rather than simply deleting them.
+
+For production use, additional controls such as authentication,
+authorization, persistent secure storage policies, audit logging and
+stronger isolation may be appropriate depending on the deployment
+requirements.
+
+---
+
+# 25. Future Improvements
 
 Possible future improvements include:
 
-- OCR-based detection for scanned documents
-- Support for additional international PII formats
-- Larger manually annotated evaluation datasets
-- Background cleanup and stronger temporary-file isolation
-- Authentication and access control for production deployments
-- More advanced document-format preservation
-- Additional export formats such as PDF
+* OCR-based detection for scanned documents
+* Support for additional international PII formats
+* Larger manually annotated evaluation datasets
+* Formal evaluation on real-world annotated documents
+* Background cleanup and stronger temporary-file isolation
+* Authentication and access control for production deployments
+* More advanced document-format preservation
+* Additional export formats such as PDF
+* Improved large-document resource management
+* More scalable background task infrastructure
+
+---
+
+# 26. Summary
+
+PII Shield is a full-stack DOCX PII redaction system combining:
+
+```text
+Regex Detection
+       +
+NLP Detection
+       +
+Context-Aware Validation
+       +
+Deterministic Replacement
+       +
+DOCX Preservation
+       +
+Asynchronous Processing
+       +
+Temporary Secure Downloads
+```
+
+The controlled synthetic evaluation fixture contains 57 known PII values
+and currently demonstrates:
+
+```text
+Detection:       57/57
+Redaction:       57/57
+Precision:       100%
+Recall:          100%
+F1 Score:        100%
+```
+
+These metrics apply specifically to the controlled synthetic fixture.
+
+For the Red Herring Prospectus, the system can report detected/replaced
+values, but a formal Accuracy, Precision, Recall or F1 score is not
+claimed because the document does not have a complete manually annotated
+PII ground-truth dataset.
+
+The project is deployed using:
+
+```text
+React/Vite
+     ↓
+Vercel
+     ↓
+FastAPI
+     ↓
+Render
+     ↓
+Python Redaction Engine
+```
+
+The application also supports Docker-based execution for a consistent
+backend runtime environment.
+
+```
+

@@ -7,12 +7,12 @@ import requests
 import docx
 from src.document_reader import DocumentReader
 
-VERCEL_ORIGIN = "https://pii-redaction-tool.vercel.app"
+VERCEL_ORIGIN = "https://pii-redaction-tool-c777.vercel.app"
 RENDER_URL = "https://pii-redaction-tool-fbh6.onrender.com"
 FILE_PATH = "Red Herring Prospectus.docx"
 
 def test_full_vercel_render_user_flow():
-    print(f"=== TESTING REAL VERCEL FRONTEND -> RENDER BACKEND USER FLOW ===")
+    print(f"=== TESTING REAL VERCEL FRONTEND (c777) -> RENDER BACKEND USER FLOW ===")
     print(f"Frontend Origin: {VERCEL_ORIGIN}")
     print(f"Backend Target: {RENDER_URL}")
     print(f"Document: {FILE_PATH} ({os.path.getsize(FILE_PATH)/(1024*1024):.2f} MB)")
