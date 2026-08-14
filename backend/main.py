@@ -251,3 +251,118 @@ async def download_file(
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         filename=download_filename
     )
+
+# In-memory task status storage: task_id -> {"status": "processing" | "success" | "error", "result": Dict, "error": str}
+tasks: Dict[str, Dict] = {}
+
+def run_redaction_task(task_id: str, input_path: str, output_path: str, filename: str):
+    try:
+        # Run Redaction
+        result = engine.redact(input_path, output_path)
+        
+        if not os.path.exists(output_path):
+            raise Exception("Redacted document could not be generated.")
+            
+        file_id = str(uuid.uuid4())
+        created_at = time.time()
+        file_mappings[file_id] = (output_path, filename, created_at)
+        
+        base, _ = os.path.splitext(filename)
+        sanitized_name = "".join(c for c in base if c.isalnum() or c in "._- ")
+        if not sanitized_name:
+            sanitized_name = "Redacted"
+        download_filename = f"{sanitized_name}_Redacted.docx"
+        
+        from datetime import datetime, timezone
+        expires_at = datetime.fromtimestamp(created_at + 120.0, tz=timezone.utc).isoformat()
+        
+        tasks[task_id] = {
+            "status": "success",
+            "result": {
+                "success": True,
+                "file_id": file_id,
+                "filename": download_filename,
+                "expires_at": expires_at,
+                "total_replacements": result["total_replacements"],
+                "replacements_by_type": result["replacements_by_type"],
+                "unique_mappings_count": result["unique_mappings_count"]
+            }
+        }
+    except Exception as e:
+        tasks[task_id] = {
+            "status": "error",
+            "error": str(e)
+        }
+    finally:
+        # Clean up input file after redaction
+        try:
+            if os.path.exists(input_path):
+                os.remove(input_path)
+        except Exception:
+            pass
+
+@app.post("/api/redact-async")
+def redact_document_async(
+    file: UploadFile = File(...),
+    background_tasks: BackgroundTasks = BackgroundTasks()
+):
+    # Prune expired files on every request
+    background_tasks.add_task(prune_expired_files, 120)
+
+    # 1. Validate file extension
+    filename = file.filename or ""
+    if not filename.lower().endswith(".docx"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unsupported file format. Only .docx files are allowed."
+        )
+
+    # 2. Enforce file size limit
+    contents = file.file.read(1024)
+    size = len(contents)
+    rest = []
+    while True:
+        chunk = file.file.read(8192)
+        if not chunk:
+            break
+        size += len(chunk)
+        if size > MAX_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File too large. Maximum allowed size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB."
+            )
+        rest.append(chunk)
+
+    all_contents = contents + b"".join(rest)
+
+    # Create safe unique temporary file names
+    unique_id = uuid.uuid4().hex
+    input_path = os.path.join(TEMP_BASE_DIR, f"in_{unique_id}.docx")
+    output_path = os.path.join(TEMP_BASE_DIR, f"out_{unique_id}.docx")
+
+    # Save uploaded file
+    try:
+        with open(input_path, "wb") as f:
+            f.write(all_contents)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save uploaded file."
+        )
+
+    task_id = str(uuid.uuid4())
+    tasks[task_id] = {"status": "processing"}
+    
+    # Run the redaction in the background task
+    background_tasks.add_task(run_redaction_task, task_id, input_path, output_path, filename)
+    
+    return {"task_id": task_id}
+
+@app.get("/api/tasks/{task_id}")
+def get_task_status(task_id: str):
+    if task_id not in tasks:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found."
+        )
+    return tasks[task_id]

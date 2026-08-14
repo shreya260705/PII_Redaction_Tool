@@ -133,19 +133,58 @@ export default function App() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_BASE}/api/redact`, {
+      // 1. Submit the file to the async redact endpoint
+      const response = await fetch(`${API_BASE}/api/redact-async`, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({ detail: "Redaction failed on server." }));
-        throw new Error(errData.detail || "An unexpected server error occurred.");
+        const errData = await response.json().catch(() => ({ detail: "Upload failed." }));
+        throw new Error(errData.detail || "An unexpected server error occurred during upload.");
       }
 
-      const result = await response.json();
-      setRedactResult(result);
-      setStatus("success");
+      const { task_id } = await response.json();
+      if (!task_id) {
+        throw new Error("No task ID returned by the server.");
+      }
+
+      // 2. Poll the status endpoint until success or failure
+      const pollInterval = 3000; // Poll every 3 seconds
+      const maxRetries = 120;    // Allow up to 6 minutes of processing (120 * 3s)
+      let retries = 0;
+
+      const pollStatus = async () => {
+        try {
+          if (retries >= maxRetries) {
+            throw new Error("Redaction timed out. Please try again with a smaller document or run locally.");
+          }
+          retries++;
+
+          const taskRes = await fetch(`${API_BASE}/api/tasks/${task_id}`);
+          if (!taskRes.ok) {
+            throw new Error("Failed to check task status.");
+          }
+
+          const taskData = await taskRes.json();
+          if (taskData.status === "success") {
+            setRedactResult(taskData.result);
+            setStatus("success");
+          } else if (taskData.status === "error") {
+            throw new Error(taskData.error || "An error occurred during redaction on the server.");
+          } else {
+            // Still processing, schedule next poll
+            setTimeout(pollStatus, pollInterval);
+          }
+        } catch (pollErr) {
+          setErrorMsg(pollErr.message || "Network error while checking status.");
+          setStatus("error");
+        }
+      };
+
+      // Start polling
+      setTimeout(pollStatus, pollInterval);
+
     } catch (err) {
       setErrorMsg(err.message || "Network error. Please check your connection and try again.");
       setStatus("error");
