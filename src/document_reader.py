@@ -79,6 +79,7 @@ class DocumentReader:
         total_text_length = 0
 
         # 1. Extract Headers and Footers section by section
+        unique_parts = set()
         for s_idx, section in enumerate(doc.sections):
             hf_parts = [
                 ("header", "default", section.header),
@@ -92,6 +93,14 @@ class DocumentReader:
             for part_type, hf_type, hf_container in hf_parts:
                 if hf_container is None:
                     continue
+
+                try:
+                    partname = hf_container.part.partname
+                    if partname in unique_parts:
+                        continue
+                    unique_parts.add(partname)
+                except Exception:
+                    pass
 
                 hf_p_idx = 0
                 hf_t_idx = 0

@@ -598,8 +598,13 @@ class RedactionEngine:
         replacements_by_type: Dict[str, int] = {}
         processed_elements = set()
 
+        import gc
         # Iterate through block structures
         for block in extracted.blocks:
+            # Periodically force garbage collection to keep memory footprint low
+            if block.block_id > 0 and block.block_id % 500 == 0:
+                gc.collect()
+
             # Skip empty or whitespace-only blocks
             if not block.text or not block.text.strip():
                 continue
