@@ -256,6 +256,8 @@ async def download_file(
         filename=download_filename
     )
 
+tasks: Dict[str, Dict] = {}
+
 # File-backed helper utilities for multi-process / restart safety
 def save_task(task_id: str, data: dict):
     tasks[task_id] = data
