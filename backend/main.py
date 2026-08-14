@@ -220,13 +220,14 @@ async def download_file(
             detail="Invalid file ID structure."
         )
 
-    if file_id not in file_mappings:
+    mapping = load_file_mapping(file_id)
+    if not mapping:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="File ID not found or has expired."
         )
 
-    filepath, original_filename, created_at = file_mappings[file_id]
+    filepath, original_filename, created_at = mapping
 
     # Verify if expired (older than 120 seconds)
     if time.time() - created_at > 120.0:
@@ -255,8 +256,57 @@ async def download_file(
         filename=download_filename
     )
 
-# In-memory task status storage: task_id -> {"status": "processing" | "success" | "error", "result": Dict, "error": str}
-tasks: Dict[str, Dict] = {}
+# File-backed helper utilities for multi-process / restart safety
+def save_task(task_id: str, data: dict):
+    tasks[task_id] = data
+    try:
+        task_file = os.path.join(TEMP_BASE_DIR, f"task_{task_id}.json")
+        import json
+        with open(task_file, "w") as f:
+            json.dump(data, f)
+    except Exception:
+        pass
+
+def load_task(task_id: str) -> dict:
+    if task_id in tasks:
+        return tasks[task_id]
+    task_file = os.path.join(TEMP_BASE_DIR, f"task_{task_id}.json")
+    if os.path.exists(task_file):
+        try:
+            import json
+            with open(task_file, "r") as f:
+                data = json.load(f)
+                tasks[task_id] = data
+                return data
+        except Exception:
+            pass
+    return None
+
+def save_file_mapping(file_id: str, output_path: str, filename: str, created_at: float):
+    file_mappings[file_id] = (output_path, filename, created_at)
+    try:
+        map_file = os.path.join(TEMP_BASE_DIR, f"map_{file_id}.json")
+        import json
+        with open(map_file, "w") as f:
+            json.dump({"output_path": output_path, "filename": filename, "created_at": created_at}, f)
+    except Exception:
+        pass
+
+def load_file_mapping(file_id: str):
+    if file_id in file_mappings:
+        return file_mappings[file_id]
+    map_file = os.path.join(TEMP_BASE_DIR, f"map_{file_id}.json")
+    if os.path.exists(map_file):
+        try:
+            import json
+            with open(map_file, "r") as f:
+                d = json.load(f)
+                res = (d["output_path"], d["filename"], d["created_at"])
+                file_mappings[file_id] = res
+                return res
+        except Exception:
+            pass
+    return None
 
 def run_redaction_task(task_id: str, input_path: str, output_path: str, filename: str):
     try:
@@ -268,7 +318,7 @@ def run_redaction_task(task_id: str, input_path: str, output_path: str, filename
             
         file_id = str(uuid.uuid4())
         created_at = time.time()
-        file_mappings[file_id] = (output_path, filename, created_at)
+        save_file_mapping(file_id, output_path, filename, created_at)
         
         base, _ = os.path.splitext(filename)
         sanitized_name = "".join(c for c in base if c.isalnum() or c in "._- ")
@@ -279,7 +329,7 @@ def run_redaction_task(task_id: str, input_path: str, output_path: str, filename
         from datetime import datetime, timezone
         expires_at = datetime.fromtimestamp(created_at + 120.0, tz=timezone.utc).isoformat()
         
-        tasks[task_id] = {
+        save_task(task_id, {
             "status": "success",
             "result": {
                 "success": True,
@@ -290,12 +340,12 @@ def run_redaction_task(task_id: str, input_path: str, output_path: str, filename
                 "replacements_by_type": result["replacements_by_type"],
                 "unique_mappings_count": result["unique_mappings_count"]
             }
-        }
+        })
     except Exception as e:
-        tasks[task_id] = {
+        save_task(task_id, {
             "status": "error",
             "error": str(e)
-        }
+        })
     finally:
         # Clean up input file after redaction
         try:
@@ -365,7 +415,7 @@ def redact_document_async(
         )
 
     task_id = str(uuid.uuid4())
-    tasks[task_id] = {"status": "processing"}
+    save_task(task_id, {"status": "processing"})
     
     # Run the redaction in the background task
     background_tasks.add_task(run_redaction_task, task_id, input_path, output_path, filename)
@@ -374,9 +424,11 @@ def redact_document_async(
 
 @app.get("/api/tasks/{task_id}")
 def get_task_status(task_id: str):
-    if task_id not in tasks:
+    task_data = load_task(task_id)
+    if not task_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found."
         )
-    return tasks[task_id]
+    return task_data
+

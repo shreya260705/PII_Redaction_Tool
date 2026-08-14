@@ -610,7 +610,7 @@ class RedactionEngine:
         # Iterate through block structures
         for block in extracted.blocks:
             # Periodically force garbage collection to keep memory footprint low
-            if block.block_id > 0 and block.block_id % 500 == 0:
+            if block.block_id > 0 and block.block_id % 100 == 0:
                 gc.collect()
                 if platform.system() == "Linux":
                     try:
