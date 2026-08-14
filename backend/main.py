@@ -16,17 +16,9 @@ app = FastAPI(title="PII Redaction Engine API")
 engine = RedactionEngine()
 
 # Configure CORS
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://pii-redaction-tool-c777.vercel.app",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["Content-Disposition"],

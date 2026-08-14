@@ -62,6 +62,13 @@ class NLPDetector(BaseDetector):
             )
 
             nlp_engine = provider.create_engine()
+            
+            # Remove unused spaCy pipeline components to optimize speed
+            nlp_model = nlp_engine.nlp.get("en")
+            if nlp_model:
+                for pipe in ["attribute_ruler", "lemmatizer"]:
+                    if pipe in nlp_model.pipe_names:
+                        nlp_model.remove_pipe(pipe)
 
             self.analyzer = AnalyzerEngine(
                 nlp_engine=nlp_engine,
