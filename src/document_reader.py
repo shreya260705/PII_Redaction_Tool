@@ -7,7 +7,7 @@ from typing import Any, Generator, List, Union
 
 import docx
 from docx.text.paragraph import Paragraph
-from docx.table import Table
+from docx.table import Table, _Cell
 
 from src.models import BlockLocation, DocumentBlock, DocumentMetadata, ExtractedDocument
 
@@ -121,7 +121,8 @@ class DocumentReader:
 
                     elif isinstance(child, Table):
                         for r_idx, row in enumerate(child.rows):
-                            for c_idx, cell in enumerate(row.cells):
+                            for c_idx, tc in enumerate(row._tr.tc_lst):
+                                cell = _Cell(tc, child)
                                 text = cell.text
                                 loc = BlockLocation(
                                     part_type=part_type,
@@ -170,7 +171,8 @@ class DocumentReader:
 
             elif isinstance(child, Table):
                 for r_idx, row in enumerate(child.rows):
-                    for c_idx, cell in enumerate(row.cells):
+                    for c_idx, tc in enumerate(row._tr.tc_lst):
+                        cell = _Cell(tc, child)
                         text = cell.text
                         loc = BlockLocation(
                             part_type="body",

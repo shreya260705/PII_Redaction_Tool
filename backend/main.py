@@ -12,6 +12,9 @@ from src.redactor import RedactionEngine
 
 app = FastAPI(title="PII Redaction Engine API")
 
+# Instantiate engine globally at startup so NLP models are loaded once
+engine = RedactionEngine()
+
 # Configure CORS
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 origins = [
@@ -135,7 +138,6 @@ def redact_document(
 
     # Run Redaction
     try:
-        engine = RedactionEngine()
         result = engine.redact(input_path, output_path)
     except Exception as e:
         raise HTTPException(

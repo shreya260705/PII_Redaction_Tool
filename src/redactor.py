@@ -606,7 +606,9 @@ class RedactionEngine:
 
             # Skip duplicate XML element nodes
             if block.element is not None:
-                element = getattr(block.element, "_element", block.element)
+                element = getattr(block.element, "_element", None)
+                if element is None:
+                    element = getattr(block.element, "_tc", block.element)
                 element_id = id(element)
                 if element_id in processed_elements:
                     continue

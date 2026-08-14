@@ -33,6 +33,8 @@ class EmailDetector(BaseDetector):
     )
 
     def detect(self, text: str) -> List[PIIMatch]:
+        if "@" not in text:
+            return []
         matches = []
         for m in self.EMAIL_REGEX.finditer(text):
             matches.append(
@@ -65,6 +67,14 @@ class PhoneDetector(BaseDetector):
     )
 
     def detect(self, text: str) -> List[PIIMatch]:
+        digit_count = 0
+        for c in text:
+            if c.isdigit():
+                digit_count += 1
+                if digit_count >= 8:
+                    break
+        if digit_count < 8:
+            return []
         matches = []
         # Check if the block contains any phone context keywords
         has_phone_context = bool(self.PHONE_CONTEXT_REGEX.search(text))
@@ -159,6 +169,8 @@ class IPAddressDetector(BaseDetector):
     )
 
     def detect(self, text: str) -> List[PIIMatch]:
+        if "." not in text:
+            return []
         matches = []
         for m in self.IPV4_CANDIDATE_REGEX.finditer(text):
             ip_candidate = m.group()
@@ -217,6 +229,14 @@ class SSNDetector(BaseDetector):
         return area != 0 and area != 666 and area < 900 and group != 0 and serial != 0
 
     def detect(self, text: str) -> List[PIIMatch]:
+        digit_count = 0
+        for c in text:
+            if c.isdigit():
+                digit_count += 1
+                if digit_count >= 9:
+                    break
+        if digit_count < 9:
+            return []
         matches = []
 
         # 1. Hyphenated SSN
@@ -291,6 +311,14 @@ class CreditCardDetector(BaseDetector):
     )
 
     def detect(self, text: str) -> List[PIIMatch]:
+        digit_count = 0
+        for c in text:
+            if c.isdigit():
+                digit_count += 1
+                if digit_count >= 13:
+                    break
+        if digit_count < 13:
+            return []
         matches = []
         for m in self.CC_CANDIDATE_REGEX.finditer(text):
             matched_str = m.group()
@@ -423,6 +451,10 @@ class DateOfBirthDetector(BaseDetector):
                 self.blocks_since_dob_context += 1
                 if self.blocks_since_dob_context > 10:
                     self.dob_context_active = False
+
+        has_digits = any(c.isdigit() for c in text)
+        if not has_digits and not self.dob_context_active:
+            return []
 
         matches = []
         

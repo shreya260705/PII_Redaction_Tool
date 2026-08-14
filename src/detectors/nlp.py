@@ -63,8 +63,6 @@ class NLPDetector(BaseDetector):
 
             nlp_engine = provider.create_engine()
 
-            self.nlp = nlp_engine.nlp["en"]
-
             self.analyzer = AnalyzerEngine(
                 nlp_engine=nlp_engine,
                 supported_languages=["en"]
@@ -153,8 +151,9 @@ class NLPDetector(BaseDetector):
         Runs spaCy NER, Microsoft Presidio Analyzer, and custom filters over the input text block.
         Returns a list of block-relative PIIMatches for PERSON, COMPANY, and ADDRESS.
         """
+        if not text or not any(c.isupper() for c in text):
+            return []
         matches: List[PIIMatch] = []
-        doc = self.nlp(text)
         
         # 1. Run Presidio Analyzer for default entities
         try:
@@ -253,11 +252,11 @@ class NLPDetector(BaseDetector):
                 if self.address_unit_rx.match(matched_text.strip()):
                     continue
 
-                # Query spaCy tags to see if this candidate overlaps with GPE or LOC
+                # Query Presidio results to see if this candidate overlaps with LOCATION
                 is_loc_gpe = False
-                for ent in doc.ents:
-                    if ent.label_ in ("GPE", "LOC"):
-                        if max(start, ent.start_char) < min(end, ent.end_char):
+                for other_res in results:
+                    if other_res.entity_type == "LOCATION":
+                        if max(start, other_res.start) < min(end, other_res.end):
                             is_loc_gpe = True
                             break
 
@@ -383,8 +382,8 @@ class NLPDetector(BaseDetector):
         text_lower = text.lower()
         keyword_hits = [kw for kw in self.address_keywords if re.search(r'\b' + re.escape(kw) + r'\b', text_lower)]
 
-        # Supporting geographic context from spaCy
-        spacy_locs = [ent for ent in doc.ents if ent.label_ in ("GPE", "LOC")]
+        # Supporting geographic context from Presidio results
+        spacy_locs = [r for r in results if r.entity_type == "LOCATION"]
         has_geo_context = len(loc_results) > 0 or len(spacy_locs) > 0
 
         is_address = False
@@ -411,7 +410,7 @@ class NLPDetector(BaseDetector):
             for res in loc_results:
                 indices.append((res.start, res.end))
             for ent in spacy_locs:
-                indices.append((ent.start_char, ent.end_char))
+                indices.append((ent.start, ent.end))
             for m in pin_matches:
                 indices.append((m.start(), m.end()))
 
@@ -449,11 +448,11 @@ class NLPDetector(BaseDetector):
             candidate = m.group()
             start, end = m.start(), m.end()
             
-            # Check overlap with GPE/LOC/ORG/FAC entities from spaCy
+            # Check overlap with LOCATION/ORGANIZATION entities from Presidio
             is_non_person_ent = False
-            for ent in doc.ents:
-                if ent.label_ in ("GPE", "LOC", "ORG", "FAC"):
-                    if max(start, ent.start_char) < min(end, ent.end_char):
+            for other_res in results:
+                if other_res.entity_type in ("LOCATION", "ORGANIZATION"):
+                    if max(start, other_res.start) < min(end, other_res.end):
                         is_non_person_ent = True
                         break
             if is_non_person_ent:
