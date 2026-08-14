@@ -133,15 +133,31 @@ export default function App() {
     formData.append("file", file);
 
     try {
-      // 1. Submit the file to the async redact endpoint
-      const response = await fetch(`${API_BASE}/api/redact-async`, {
-        method: "POST",
-        body: formData,
-      });
+      // 1. Submit the file to the async redact endpoint with cold-start retry
+      let response = null;
+      let uploadAttempts = 0;
+      const maxUploadAttempts = 3;
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({ detail: "Upload failed." }));
-        throw new Error(errData.detail || "An unexpected server error occurred during upload.");
+      while (uploadAttempts < maxUploadAttempts) {
+        uploadAttempts++;
+        try {
+          response = await fetch(`${API_BASE}/api/redact-async`, {
+            method: "POST",
+            body: formData,
+          });
+          if (response.ok || (response.status !== 502 && response.status !== 503)) {
+            break;
+          }
+        } catch (netErr) {
+          if (uploadAttempts >= maxUploadAttempts) throw netErr;
+        }
+        // Wait 3s before retrying cold start
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+
+      if (!response || !response.ok) {
+        const errData = await response?.json().catch(() => ({ detail: "Upload failed." }));
+        throw new Error(errData?.detail || "An unexpected server error occurred during upload.");
       }
 
       const { task_id } = await response.json();
@@ -153,6 +169,7 @@ export default function App() {
       const pollInterval = 3000; // Poll every 3 seconds
       const maxRetries = 120;    // Allow up to 6 minutes of processing (120 * 3s)
       let retries = 0;
+      let consecutiveErrors = 0;
 
       const pollStatus = async () => {
         try {
@@ -163,9 +180,16 @@ export default function App() {
 
           const taskRes = await fetch(`${API_BASE}/api/tasks/${task_id}`);
           if (!taskRes.ok) {
-            throw new Error("Failed to check task status.");
+            consecutiveErrors++;
+            if (consecutiveErrors >= 5) {
+              throw new Error("Failed to check task status after multiple attempts.");
+            }
+            // Transient non-200 (e.g. cold start blip), retry on next tick
+            setTimeout(pollStatus, pollInterval);
+            return;
           }
 
+          consecutiveErrors = 0;
           const taskData = await taskRes.json();
           if (taskData.status === "success") {
             setRedactResult(taskData.result);
@@ -177,8 +201,13 @@ export default function App() {
             setTimeout(pollStatus, pollInterval);
           }
         } catch (pollErr) {
-          setErrorMsg(pollErr.message || "Network error while checking status.");
-          setStatus("error");
+          consecutiveErrors++;
+          if (consecutiveErrors >= 5 || pollErr.message.includes("timed out")) {
+            setErrorMsg(pollErr.message || "Network error while checking status.");
+            setStatus("error");
+          } else {
+            setTimeout(pollStatus, pollInterval);
+          }
         }
       };
 
