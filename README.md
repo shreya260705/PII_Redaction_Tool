@@ -1,24 +1,3 @@
-Bilkul. ❤️ Main tumhe **poora ready-to-paste `README.md`** de raha hoon, existing README ki achhi technical structure ko preserve karke, but updated with:
-
-* Vercel deployed frontend
-* Render deployed backend
-* Docker
-* Async processing
-* Large DOCX handling
-* API endpoints
-* Testing
-* **57/57 = 100% Precision/Recall only for the controlled synthetic 57-PII test**
-* **RHP ke liye NO false claim of 100% accuracy/precision/recall**
-* Clear statement that **RHP ka exact ground-truth PII count unknown hai**
-* RHP replacement count ko accuracy metric na maan-ne ki explanation
-* Production/deployment limitation honestly documented
-
-For the deployed links, the current URLs you gave me are:
-
-**Frontend:** [PII Shield — Vercel Frontend](https://pii-redaction-tool-c777.vercel.app?utm_source=chatgpt.com)
-**Backend:** [PII Shield — Render Backend](https://pii-redaction-tool-fbh6.onrender.com?utm_source=chatgpt.com)
-
-Below is the complete README.
 
 ````markdown
 # PII Shield — PII Redaction Tool
